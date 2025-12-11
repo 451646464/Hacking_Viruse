@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الإشعارات - CyberHomesh{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- حقل CSRF token مخفي -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    
+    <!-- عنوان الصفحة -->
+    <div class="bg-gradient-to-r from-purple-900/80 to-indigo-900/80 backdrop-blur-lg rounded-2xl p-6 mb-8 shadow-lg border border-purple-700/30">
+        <div class="flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-white mb-2 flex items-center">
+                <i class="fas fa-bell mr-4 text-yellow-400"></i>
+                إدارة الإشعارات
+            </h1>
+            <div class="space-x-2">
+                <button id="createNotificationBtn" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-all duration-200 text-white flex items-center">
+                    <i class="fas fa-plus mr-2"></i>
+                    إنشاء إشعار جديد
+                </button>
+            </div>
+        </div>
+        <p class="text-blue-200">إدارة وإنشاء الإشعارات للمستخدمين</p>
+    </div>
+
+    <!-- نموذج إنشاء إشعار جديد -->
+    <div id="createNotificationForm" class="bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-gray-700/50 mb-8 hidden">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center pb-4 border-b border-gray-700/50">
+            <i class="fas fa-plus-circle mr-3 text-green-400"></i>
+            إنشاء إشعار جديد
+        </h2>
+
+        <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-gray-300 mb-2 font-medium">عنوان الإشعار</label>
+                    <input type="text" id="notificationTitle" class="w-full bg-gray-900/50 border border-gray-700/70 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" placeholder="أدخل عنوان الإشعار" required>
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 mb-2 font-medium">نوع الإشعار</label>
+                    <select id="notificationType" class="w-full bg-gray-900/50 border border-gray-700/70 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                        <option value="general">عام</option>
+                        <option value="security">أمان</option>
+                        <option value="admin">إداري</option>
+                        <option value="system">نظام</option>
+                        <option value="warning">تحذير</option>
+                        <option value="info">معلومات</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-gray-300 mb-2 font-medium">نص الإشعار</label>
+                <textarea id="notificationMessage" rows="4" class="w-full bg-gray-900/50 border border-gray-700/70 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" placeholder="أدخل نص الإشعار" required></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-gray-300 mb-2 font-medium">الأيقونة</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500">
+                            <i class="fas fa-icons"></i>
+                        </span>
+                        <select id="notificationIcon" class="w-full bg-gray-900/50 border border-gray-700/70 rounded-lg px-4 py-3 pr-12 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                            <option value="bell">جرس</option>
+                            <option value="shield-alt">درع</option>
+                            <option value="exclamation-triangle">تحذير</option>
+                            <option value="info-circle">معلومات</option>
+                            <option value="cog">إعدادات</option>
+                            <option value="user-shield">مدير</option>
+                            <option value="check-circle">نجاح</option>
+                            <option value="lock">قفل</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-gray-300 mb-2 font-medium">رابط (اختياري)</label>
+                    <input type="text" id="notificationLink" class="w-full bg-gray-900/50 border border-gray-700/70 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" placeholder="رابط اختياري للإشعار">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <div class="flex items-center mb-2">
+                        <input type="checkbox" id="isGlobalNotification" class="w-4 h-4 bg-gray-900 border-gray-700 rounded">
+                        <label class="ml-2 text-gray-300 font-medium">إشعار عام (لجميع المستخدمين)</label>
+                    </div>
+                    <p class="text-gray-500 text-sm">سيتم إرسال الإشعار لجميع المستخدمين المسجلين</p>
+                </div>
+
+                <div id="userSelectionContainer">
+                    <label class="block text-gray-300 mb-2 font-medium">المستخدم</label>
+                    <select id="notificationUserId" class="w-full bg-gray-900/50 border border-gray-700/70 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                        <option value="">اختر مستخدم...</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.username }} ({{ user.email }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <button id="cancelNotification" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition-all duration-200 text-white flex items-center">
+                    <i class="fas fa-times mr-2"></i>
+                    إلغاء
+                </button>
+                <button id="sendNotification" class="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-all duration-200 text-white flex items-center">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    إرسال الإشعار
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- قسم عرض الإشعارات المرسلة -->
+    <div class="bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-gray-700/50">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center pb-4 border-b border-gray-700/50">
+            <i class="fas fa-history mr-3 text-blue-400"></i>
+            سجل الإشعارات المرسلة
+        </h2>
+
+        <!-- الفلترة -->
+        <div class="flex flex-wrap mb-6">
+            <button class="sent-notification-filter active px-4 py-2 mr-2 mb-2 rounded-lg transition-all duration-200 hover:bg-blue-600/20" data-filter="all">
+                الكل
+            </button>
+            <button class="sent-notification-filter px-4 py-2 mr-2 mb-2 rounded-lg transition-all duration-200 hover:bg-blue-600/20" data-filter="global">
+                الإشعارات العامة
+            </button>
+            <button class="sent-notification-filter px-4 py-2 mr-2 mb-2 rounded-lg transition-all duration-200 hover:bg-blue-600/20" data-filter="personal">
+                الإشعارات الشخصية
+            </button>
+        </div>
+
+        <!-- قائمة الإشعارات المرسلة -->
+        <div id="sent-notifications-list" class="space-y-4">
+            <!-- سيتم تحميل الإشعارات المرسلة هنا -->
+            <div class="text-center py-8">
+                <p class="text-gray-400">جاري تحميل الإشعارات...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript للتعامل مع الإشعارات -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // المتغيرات
+    const createNotificationBtn = document.getElementById('createNotificationBtn');
+    const createNotificationForm = document.getElementById('createNotificationForm');
+    const cancelNotificationBtn = document.getElementById('cancelNotification');
+    const sendNotificationBtn = document.getElementById('sendNotification');
+    const isGlobalCheckbox = document.getElementById('isGlobalNotification');
+    const userSelectionContainer = document.getElementById('userSelectionContainer');
+    const sentNotificationsContainer = document.getElementById('sent-notifications-list');
+    const sentNotificationFilters = document.querySelectorAll('.sent-notification-filter');
+    
+    let sentNotificationsData = [];
+    let currentSentFilter = 'all';
+    
+    // إظهار / إخفاء نموذج إنشاء إشعار جديد
+    createNotificationBtn.addEventListener('click', function() {
+        createNotificationForm.classList.toggle('hidden');
+        createNotificationBtn.classList.toggle('bg-red-600');
+        createNotificationBtn.classList.toggle('hover:bg-red-700');
+        createNotificationBtn.classList.toggle('bg-green-600');
+        createNotificationBtn.classList.toggle('hover:bg-green-700');
+        
+        if (!createNotificationForm.classList.contains('hidden')) {
+            createNotificationBtn.innerHTML = '<i class="fas fa-times mr-2"></i> إلغاء';
+        } else {
+            createNotificationBtn.innerHTML = '<i class="fas fa-plus mr-2"></i> إنشاء إشعار جديد';
+        }
+    });
+    
+    // إلغاء إنشاء إشعار
+    cancelNotificationBtn.addEventListener('click', function() {
+        createNotificationForm.classList.add('hidden');
+        createNotificationBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+        createNotificationBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        createNotificationBtn.innerHTML = '<i class="fas fa-plus mr-2"></i> إنشاء إشعار جديد';
+        resetForm();
+    });
+    
+    // التبديل بين الإشعارات العامة والشخصية
+    isGlobalCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            userSelectionContainer.classList.add('opacity-50', 'pointer-events-none');
+        } else {
+            userSelectionContainer.classList.remove('opacity-50', 'pointer-events-none');
+        }
+    });
+    
+    // إرسال الإشعار الجديد
+    sendNotificationBtn.addEventListener('click', function() {
+        const title = document.getElementById('notificationTitle').value;
+        const message = document.getElementById('notificationMessage').value;
+        const type = document.getElementById('notificationType').value;
+        const icon = document.getElementById('notificationIcon').value;
+        const link = document.getElementById('notificationLink').value;
+        const isGlobal = isGlobalCheckbox.checked;
+        const userId = !isGlobal ? document.getElementById('notificationUserId').value : null;
+        
+        // التحقق من البيانات
+        if (!title || !message) {
+            alert('يرجى ملء جميع الحقول المطلوبة');
+            return;
+        }
+        
+        if (!isGlobal && !userId) {
+            alert('يرجى اختيار مستخدم أو تحديد الإشعار كعام');
+            return;
+        }
+        
+        // إعداد بيانات الإشعار
+        const notificationData = {
+            title: title,
+            message: message,
+            type: type,
+            icon: icon,
+            link: link || null,
+            is_global: isGlobal,
+            user_id: !isGlobal ? userId : null
+        };
+        
+        // تعطيل الزر وعرض حالة التحميل
+        sendNotificationBtn.disabled = true;
+        sendNotificationBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> جاري الإرسال...';
+        
+        // إضافة CSRF token إن وجد
+        const csrfTokenElement = document.querySelector('input[name="csrf_token"]');
+        
+        // إرسال الطلب إلى الخادم
+        fetch('/api/admin/notifications/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfTokenElement ? csrfTokenElement.value : ''
+            },
+            body: JSON.stringify(notificationData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('تم إرسال الإشعار بنجاح');
+                resetForm();
+                createNotificationForm.classList.add('hidden');
+                createNotificationBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                createNotificationBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                createNotificationBtn.innerHTML = '<i class="fas fa-plus mr-2"></i> إنشاء إشعار جديد';
+                
+                // تحميل الإشعارات المرسلة مرة أخرى
+                loadSentNotifications();
+            } else {
+                alert('حدث خطأ أثناء إرسال الإشعار: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء الاتصال بالخادم');
+        })
+        .finally(() => {
+            // إعادة تفعيل الزر
+            sendNotificationBtn.disabled = false;
+            sendNotificationBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> إرسال الإشعار';
+        });
+    });
+    
+    // إعادة تعيين النموذج
+    function resetForm() {
+        document.getElementById('notificationTitle').value = '';
+        document.getElementById('notificationMessage').value = '';
+        document.getElementById('notificationType').value = 'general';
+        document.getElementById('notificationIcon').value = 'bell';
+        document.getElementById('notificationLink').value = '';
+        document.getElementById('isGlobalNotification').checked = false;
+        document.getElementById('notificationUserId').value = '';
+        userSelectionContainer.classList.remove('opacity-50', 'pointer-events-none');
+    }
+    
+    // تحميل الإشعارات المرسلة
+    function loadSentNotifications() {
+        sentNotificationsContainer.innerHTML = '<div class="text-center py-8"><p class="text-gray-400">جاري تحميل الإشعارات...</p></div>';
+        
+        fetch('/api/admin/notifications/sent')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    sentNotificationsData = data.notifications;
+                    renderSentNotifications();
+                } else {
+                    sentNotificationsContainer.innerHTML = '<div class="text-center py-8"><p class="text-gray-400">حدث خطأ أثناء تحميل الإشعارات</p></div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                sentNotificationsContainer.innerHTML = '<div class="text-center py-8"><p class="text-gray-400">حدث خطأ أثناء الاتصال بالخادم</p></div>';
+            });
+    }
+    
+    // عرض الإشعارات المرسلة
+    function renderSentNotifications() {
+        const filteredNotifications = filterSentNotifications(sentNotificationsData, currentSentFilter);
+        
+        if (filteredNotifications.length === 0) {
+            sentNotificationsContainer.innerHTML = '<div class="text-center py-8"><p class="text-gray-400">لا توجد إشعارات مرسلة</p></div>';
+            return;
+        }
+        
+        sentNotificationsContainer.innerHTML = '';
+        
+        filteredNotifications.forEach(notification => {
+            const notificationElement = createSentNotificationElement(notification);
+            sentNotificationsContainer.appendChild(notificationElement);
+        });
+    }
+    
+    // تصفية الإشعارات المرسلة
+    function filterSentNotifications(notifications, filter) {
+        if (filter === 'all') return notifications;
+        if (filter === 'global') return notifications.filter(n => n.is_global);
+        if (filter === 'personal') return notifications.filter(n => !n.is_global);
+        return notifications;
+    }
+    
+    // إنشاء عنصر HTML للإشعار المرسل
+    function createSentNotificationElement(notification) {
+        const div = document.createElement('div');
+        div.className = 'bg-gray-900/50 rounded-lg border border-gray-700/50 p-4 hover:border-blue-600/20 transition-all duration-200';
+        
+        // تحديد نوع الإشعار
+        const typeLabel = getNotificationTypeLabel(notification.type);
+        const iconClass = getNotificationTypeIconClass(notification.type);
+        
+        // تحديد المستلم
+        const recipientText = notification.is_global ? 
+            '<span class="text-green-400">جميع المستخدمين</span>' : 
+            `<span class="text-blue-400">مستخدم #${notification.user_id}</span>`;
+        
+        div.innerHTML = `
+            <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center">
+                    <div class="text-3xl ${iconClass} mr-4">
+                        <i class="fas fa-${notification.icon || 'bell'}"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-white">${notification.title}</h4>
+                        <div class="text-sm text-gray-400">
+                            <span>نوع: ${typeLabel}</span> | 
+                            <span>إلى: ${recipientText}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-500">
+                    ${formatDate(notification.created_at)}
+                </div>
+            </div>
+            
+            <p class="text-gray-400 mb-3 border-r-4 ${iconClass} border-opacity-50 pr-3 py-1">${notification.message}</p>
+            
+            <div class="flex justify-end">
+                <button class="delete-sent-notification-btn px-3 py-1 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded transition-colors" data-id="${notification.id}">
+                    <i class="fas fa-trash-alt mr-1"></i> حذف الإشعار
+                </button>
+            </div>
+        `;
+        
+        // إضافة حدث الحذف
+        div.querySelector('.delete-sent-notification-btn').addEventListener('click', function() {
+            const id = this.dataset.id;
+            deleteSentNotification(id);
+        });
+        
+        return div;
+    }
+    
+    // حذف إشعار مرسل
+    function deleteSentNotification(id) {
+        if (confirm('هل أنت متأكد من حذف هذا الإشعار؟')) {
+            // إضافة CSRF token إن وجد
+            const csrfTokenElement = document.querySelector('input[name="csrf_token"]');
+            
+            fetch(`/api/admin/notifications/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrfTokenElement ? csrfTokenElement.value : ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    sentNotificationsData = sentNotificationsData.filter(n => n.id != id);
+                    renderSentNotifications();
+                } else {
+                    alert('حدث خطأ أثناء حذف الإشعار');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء الاتصال بالخادم');
+            });
+        }
+    }
+    
+    // تبديل فلترة الإشعارات المرسلة
+    sentNotificationFilters.forEach(filter => {
+        filter.addEventListener('click', function() {
+            currentSentFilter = this.dataset.filter;
+            
+            sentNotificationFilters.forEach(f => {
+                f.classList.remove('active', 'bg-blue-600/20');
+            });
+            
+            this.classList.add('active', 'bg-blue-600/20');
+            
+            renderSentNotifications();
+        });
+    });
+    
+    // وظائف مساعدة
+    function getNotificationTypeLabel(type) {
+        const labels = {
+            'general': 'عام',
+            'security': 'أمان',
+            'system': 'نظام',
+            'admin': 'إداري',
+            'warning': 'تحذير',
+            'info': 'معلومات'
+        };
+        return labels[type] || 'عام';
+    }
+    
+    function getNotificationTypeIconClass(type) {
+        const classes = {
+            'general': 'text-blue-400',
+            'security': 'text-green-400',
+            'admin': 'text-purple-400',
+            'system': 'text-yellow-400',
+            'warning': 'text-orange-400',
+            'info': 'text-cyan-400'
+        };
+        return classes[type] || 'text-blue-400';
+    }
+    
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleString('ar-SA');
+    }
+    
+    // تحميل الإشعارات المرسلة عند تحميل الصفحة
+    loadSentNotifications();
+});
+</script>
+{% endblock %}

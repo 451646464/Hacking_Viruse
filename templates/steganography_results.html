@@ -1,0 +1,221 @@
+{% if results and results.hidden_data and results.hidden_data.steganography_results %}
+<div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-md p-6 mb-8 card-hover">
+    <h2 class="text-xl font-bold text-white mb-4 pb-2 border-b border-gray-600 flex items-center">
+        <i class="fas fa-eye-slash text-purple-400 mr-2"></i> تحليل البيانات المحقونة المتقدم
+        {% if results.hidden_data.risk_score > 0.5 %}
+        <span class="ml-2 px-2 py-1 bg-red-500/40 text-red-300 text-sm rounded-full">خطورة عالية</span>
+        {% elif results.hidden_data.risk_score > 0.3 %}
+        <span class="ml-2 px-2 py-1 bg-orange-500/40 text-orange-300 text-sm rounded-full">خطورة متوسطة</span>
+        {% else %}
+        <span class="ml-2 px-2 py-1 bg-green-500/40 text-green-300 text-sm rounded-full">خطورة منخفضة</span>
+        {% endif %}
+    </h2>
+
+    <!-- بطاقة درجة المخاطرة -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-gray-900/60 rounded-xl p-5 border border-gray-700/50">
+            <div class="flex justify-between">
+                <h3 class="text-gray-400 text-sm font-medium mb-2">درجة المخاطرة</h3>
+                <span class="px-2 py-1 text-xs rounded-full {{ 
+                    'bg-red-900/30 text-red-400' if results.hidden_data.risk_score > 0.7 else
+                    'bg-orange-900/30 text-orange-400' if results.hidden_data.risk_score > 0.4 else
+                    'bg-green-900/30 text-green-400'
+                }}">
+                    {{ (results.hidden_data.risk_score * 100)|round(1) }}%
+                </span>
+            </div>
+            
+            <div class="mt-2 bg-gray-800/60 rounded-full h-2.5 overflow-hidden">
+                <div class="h-2.5 {{ 
+                    'bg-gradient-to-r from-red-600 to-red-400' if results.hidden_data.risk_score > 0.7 else
+                    'bg-gradient-to-r from-orange-600 to-orange-400' if results.hidden_data.risk_score > 0.4 else
+                    'bg-gradient-to-r from-green-600 to-green-400'
+                }}" style="width: {{ (results.hidden_data.risk_score * 100)|round(1) }}%">
+                </div>
+            </div>
+            
+            <p class="text-sm text-gray-500 mt-2">مستوى المخاطرة: {{ results.hidden_data.risk_level }}</p>
+        </div>
+
+        <!-- تهديدات مكتشفة -->
+        <div class="bg-gray-900/60 rounded-xl p-5 border border-gray-700/50 md:col-span-2">
+            <h3 class="text-gray-400 text-sm font-medium mb-2">تهديدات مكتشفة</h3>
+            {% if results.hidden_data.detected_threats|length > 0 %}
+                <div class="flex flex-wrap gap-2 mt-2">
+                {% for threat in results.hidden_data.detected_threats %}
+                    <span class="px-3 py-1.5 bg-red-900/30 text-red-300 text-xs rounded-xl">
+                        <i class="fas fa-exclamation-triangle mr-1"></i> {{ threat }}
+                    </span>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500">لم يتم اكتشاف تهديدات</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- تحليل LSB -->
+    {% if results.hidden_data.steganography_results.lsb_analysis %}
+    <div class="mb-6">
+        <h3 class="text-white text-lg font-medium mb-3">تحليل الـ LSB (البت الأقل أهمية)</h3>
+        <div class="bg-gray-900/60 rounded-xl p-5 border border-gray-700/50">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <p class="text-gray-400 text-sm">نسبة استخدام القناة الحمراء:</p>
+                    <p class="text-white font-medium">{{ results.hidden_data.steganography_results.lsb_analysis.red_usage_percentage|round(2) }}%</p>
+                </div>
+                <div>
+                    <p class="text-gray-400 text-sm">نسبة استخدام القناة الخضراء:</p>
+                    <p class="text-white font-medium">{{ results.hidden_data.steganography_results.lsb_analysis.green_usage_percentage|round(2) }}%</p>
+                </div>
+                <div>
+                    <p class="text-gray-400 text-sm">نسبة استخدام القناة الزرقاء:</p>
+                    <p class="text-white font-medium">{{ results.hidden_data.steganography_results.lsb_analysis.blue_usage_percentage|round(2) }}%</p>
+                </div>
+            </div>
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <p class="text-gray-400 text-sm">انتروبيا القناة الحمراء:</p>
+                    <p class="text-white font-medium">{{ results.hidden_data.steganography_results.lsb_analysis.red_entropy|round(2) }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-400 text-sm">انتروبيا القناة الخضراء:</p>
+                    <p class="text-white font-medium">{{ results.hidden_data.steganography_results.lsb_analysis.green_entropy|round(2) }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-400 text-sm">انتروبيا القناة الزرقاء:</p>
+                    <p class="text-white font-medium">{{ results.hidden_data.steganography_results.lsb_analysis.blue_entropy|round(2) }}</p>
+                </div>
+            </div>
+            
+            {% if results.hidden_data.steganography_results.lsb_analysis.suspicious %}
+            <div class="mt-4 p-3 bg-red-900/30 rounded-lg border border-red-800/50">
+                <p class="text-red-300">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    <strong>تم اكتشاف بيانات مخفية باستخدام تقنية LSB:</strong> 
+                    {{ results.hidden_data.steganography_results.lsb_analysis.reason }}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- الملفات المضمنة -->
+    {% if results.hidden_data.steganography_results.embedded_files|length > 0 %}
+    <div class="mb-6">
+        <h3 class="text-white text-lg font-medium mb-3">ملفات مضمنة مكتشفة</h3>
+        <div class="bg-gray-900/60 rounded-xl p-5 border border-gray-700/50">
+            <div class="divide-y divide-gray-700/50">
+                {% for file in results.hidden_data.steganography_results.embedded_files %}
+                <div class="py-3 {% if not loop.first %}pt-4{% endif %} {% if not loop.last %}pb-4{% endif %}">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-red-400 font-medium">{{ file.type }}</p>
+                            {% if file.offset is defined %}
+                            <p class="text-gray-500 text-sm">موقع البداية: {{ file.offset }}</p>
+                            {% endif %}
+                        </div>
+                        <span class="px-3 py-1.5 bg-red-900/30 text-red-300 text-xs rounded-xl">
+                            <i class="fas fa-file-archive mr-1"></i> ملف محقون
+                        </span>
+                    </div>
+                    {% if file.content is defined and file.content %}
+                    <div class="mt-2">
+                        <p class="text-gray-400 text-sm">المحتويات:</p>
+                        <ul class="mt-1 list-disc list-inside text-gray-300">
+                            {% for item in file.content %}
+                                {% if loop.index <= 5 or not (file.content|length > 5) %}
+                                <li class="text-sm">{{ item }}</li>
+                                {% endif %}
+                            {% endfor %}
+                            {% if file.content|length > 5 %}
+                                <li class="text-sm text-gray-500">... {{ file.content|length - 5 }} ملفات إضافية</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- الشفرة المشبوهة -->
+    {% if results.hidden_data.steganography_results.suspicious_code|length > 0 %}
+    <div class="mb-6">
+        <h3 class="text-white text-lg font-medium mb-3">شفرة مشبوهة مكتشفة</h3>
+        <div class="bg-gray-900/60 rounded-xl p-5 border border-gray-700/50">
+            <div class="divide-y divide-gray-700/50">
+                {% for code in results.hidden_data.steganography_results.suspicious_code %}
+                <div class="py-3 {% if not loop.first %}pt-4{% endif %} {% if not loop.last %}pb-4{% endif %}">
+                    <div class="flex justify-between items-center">
+                        <p class="text-red-400 font-medium">{{ code.pattern }}</p>
+                        <span class="px-3 py-1.5 bg-red-900/30 text-red-300 text-xs rounded-xl">
+                            <i class="fas fa-code mr-1"></i> شفرة مشبوهة
+                        </span>
+                    </div>
+                    <p class="text-gray-500 text-sm">موقع البداية: {{ code.offset }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- تحليل البكسل -->
+    {% if results.hidden_data.steganography_results.pixel_anomalies %}
+    <div class="mb-6">
+        <h3 class="text-white text-lg font-medium mb-3">تحليل البكسل</h3>
+        <div class="bg-gray-900/60 rounded-xl p-5 border border-gray-700/50">
+            {% if results.hidden_data.steganography_results.pixel_anomalies.suspicious_regions_count > 0 %}
+            <div class="p-3 mb-4 {% if results.hidden_data.steganography_results.pixel_anomalies.suspicious_regions_count > 3 %}bg-red-900/30 border border-red-800/50{% else %}bg-orange-900/30 border border-orange-800/50{% endif %} rounded-lg">
+                <p class="{% if results.hidden_data.steganography_results.pixel_anomalies.suspicious_regions_count > 3 %}text-red-300{% else %}text-orange-300{% endif %}">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    <strong>تم اكتشاف {{ results.hidden_data.steganography_results.pixel_anomalies.suspicious_regions_count }} مناطق مشبوهة</strong> 
+                    بناءً على تحليل توزيع البكسل والألوان.
+                </p>
+            </div>
+            {% endif %}
+            
+            {% if results.hidden_data.steganography_results.pixel_anomalies.invisible_data %}
+            <div class="p-3 mb-4 bg-red-900/30 border border-red-800/50 rounded-lg">
+                <p class="text-red-300">
+                    <i class="fas fa-eye-slash mr-1"></i>
+                    <strong>تم اكتشاف بيانات مخفية في مناطق شفافة</strong> من الصورة.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- معلومات تقنية إضافية -->
+    <div class="mt-6">
+        <button class="text-gray-400 hover:text-white flex items-center" onclick="toggleTechnicalInfo()">
+            <i class="fas fa-info-circle mr-2"></i> عرض معلومات تقنية إضافية
+            <i class="fas fa-chevron-down ml-2" id="technicalInfoIcon"></i>
+        </button>
+        <div class="hidden mt-4 bg-gray-900/60 rounded-xl p-5 border border-gray-700/50" id="technicalInfoSection">
+            <pre class="text-xs text-gray-400 overflow-auto max-h-96 p-2 bg-gray-950/70 rounded">{{ results.hidden_data.steganography_results|pprint }}</pre>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleTechnicalInfo() {
+    const section = document.getElementById('technicalInfoSection');
+    const icon = document.getElementById('technicalInfoIcon');
+    if (section.classList.contains('hidden')) {
+        section.classList.remove('hidden');
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+    } else {
+        section.classList.add('hidden');
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    }
+}
+</script>
+{% endif %}

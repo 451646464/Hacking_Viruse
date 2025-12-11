@@ -1,0 +1,70 @@
+{% set icon_class = {
+    'general': 'text-blue-400',
+    'security': 'text-green-400',
+    'admin': 'text-purple-400',
+    'system': 'text-yellow-400',
+    'warning': 'text-orange-400',
+    'info': 'text-cyan-400'
+} %}
+
+{% set type_label = {
+    'general': 'عام',
+    'security': 'أمان',
+    'system': 'نظام',
+    'admin': 'إداري',
+    'warning': 'تحذير',
+    'info': 'معلومات'
+} %}
+
+<div class="notification-item relative flex p-4 rounded-lg border 
+    {{ 'bg-gray-800/40 border-gray-700/40' if notification.is_read else 'bg-gray-800/70 border-blue-800/40' }} 
+    hover:border-blue-600/30 transition-all duration-200"
+    data-id="{{ notification.id }}" 
+    data-type="{{ notification.notification_type }}" 
+    data-read="{{ notification.is_read|lower }}">
+    
+    {% if not notification.is_read %}
+    <span class="absolute top-4 left-4 w-3 h-3 bg-blue-500 rounded-full"></span>
+    {% endif %}
+    
+    <div class="text-3xl mr-4 {{ icon_class.get(notification.notification_type, 'text-blue-400') }}">
+        <i class="fas fa-{{ notification.icon or 'bell' }}"></i>
+    </div>
+    
+    <div class="flex-1">
+        <div class="flex justify-between items-start mb-1">
+            <h4 class="text-lg font-semibold {{ 'text-white' if not notification.is_read else 'text-gray-300' }}">{{ notification.title }}</h4>
+            <div class="text-xs text-gray-500">{{ notification.created_at }}</div>
+        </div>
+        
+        <p class="text-gray-400 mb-3">{{ notification.message }}</p>
+        
+        <div class="flex justify-between items-center">
+            <div class="flex space-x-2 text-sm">
+                <span class="px-2 py-1 rounded bg-gray-700 text-gray-300">
+                    {{ type_label.get(notification.notification_type, 'عام') }}
+                </span>
+            </div>
+            
+            <div class="space-x-2">
+                {% if not notification.is_read %}
+                <button class="mark-read-btn text-blue-400 hover:text-blue-300 transition-colors">
+                    <i class="fas fa-check"></i> تحديد كمقروء
+                </button>
+                {% endif %}
+                
+                <button class="delete-notification-btn text-red-400 hover:text-red-300 transition-colors">
+                    <i class="fas fa-trash-alt"></i> حذف
+                </button>
+            </div>
+        </div>
+        
+        {% if notification.link %}
+        <div class="mt-3">
+            <a href="{{ notification.link }}" class="text-blue-400 hover:text-blue-300 flex items-center">
+                <i class="fas fa-external-link-alt mr-2"></i> عرض التفاصيل
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>

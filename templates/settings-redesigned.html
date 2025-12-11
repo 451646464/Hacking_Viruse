@@ -1,0 +1,811 @@
+{% extends "base.html" %}
+
+{% block title %}الإعدادات - CyberHomesh{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- شريط العنوان -->
+    <div class="bg-gradient-to-r from-blue-900/80 to-indigo-900/80 backdrop-blur-lg rounded-2xl p-6 mb-8 shadow-lg border border-blue-700/30">
+        <h1 class="text-3xl font-bold text-white mb-2 flex items-center">
+            <i class="fas fa-cog mr-4 text-blue-400"></i>
+            إعدادات الحساب
+        </h1>
+        <p class="text-blue-200">قم بتخصيص تجربتك وإدارة إعدادات حسابك والأمان والإشعارات</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- قائمة التنقل -->
+        <div class="lg:col-span-3">
+            <div class="bg-gray-800/70 backdrop-blur-lg rounded-xl overflow-hidden shadow-lg border border-gray-700/50 sticky top-24">
+                <!-- معلومات المستخدم -->
+                <div class="p-6 border-b border-gray-700/70 bg-gradient-to-br from-gray-800/50 to-gray-900/50">
+                    <div class="flex items-center">
+                        <div class="relative">
+                            {% if current_user.profile_image %}
+                            <img id="navProfileImage" class="w-16 h-16 rounded-full object-cover border-2 border-blue-500" src="{{ url_for('static', filename='uploads/profiles/' + current_user.profile_image) }}" alt="صورة الملف الشخصي">
+                            {% else %}
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold border-2 border-blue-500">
+                                {{ current_user.username[0]|upper }}
+                            </div>
+                            {% endif %}
+                            <div class="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-gray-900"></div>
+                        </div>
+                        <div class="mr-4">
+                            <h2 class="font-bold text-lg text-white">{{ current_user.username }}</h2>
+                            <p class="text-sm text-gray-400 truncate max-w-[150px]">{{ current_user.email }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- القائمة -->
+                <nav class="p-2">
+                    <a href="#profile" class="settings-tab group flex items-center p-4 rounded-lg mb-1 transition-all duration-200 hover:bg-blue-600/20 active">
+                        <div class="w-10 h-10 rounded-full bg-blue-600/20 group-hover:bg-blue-600/40 flex items-center justify-center mr-3 transition-all duration-200">
+                            <i class="fas fa-user text-blue-400"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-white">الملف الشخصي</p>
+                            <p class="text-xs text-blue-300/70">إدارة معلوماتك الشخصية</p>
+                        </div>
+                    </a>
+                    
+                    <a href="#security" class="settings-tab group flex items-center p-4 rounded-lg mb-1 transition-all duration-200 hover:bg-green-600/20">
+                        <div class="w-10 h-10 rounded-full bg-green-600/20 group-hover:bg-green-600/40 flex items-center justify-center mr-3 transition-all duration-200">
+                            <i class="fas fa-shield-alt text-green-400"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-white">الأمان</p>
+                            <p class="text-xs text-green-300/70">كلمة المرور ومفاتيح API</p>
+                        </div>
+                    </a>
+                    
+                    <a href="#notifications" class="settings-tab group flex items-center p-4 rounded-lg mb-1 transition-all duration-200 hover:bg-yellow-600/20">
+                        <div class="w-10 h-10 rounded-full bg-yellow-600/20 group-hover:bg-yellow-600/40 flex items-center justify-center mr-3 transition-all duration-200">
+                            <i class="fas fa-bell text-yellow-400"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-white">الإشعارات</p>
+                            <p class="text-xs text-yellow-300/70">إعدادات الإشعارات والتنبيهات</p>
+                        </div>
+                    </a>
+                    
+                    <a href="#preferences" class="settings-tab group flex items-center p-4 rounded-lg mb-1 transition-all duration-200 hover:bg-purple-600/20">
+                        <div class="w-10 h-10 rounded-full bg-purple-600/20 group-hover:bg-purple-600/40 flex items-center justify-center mr-3 transition-all duration-200">
+                            <i class="fas fa-palette text-purple-400"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-white">المظهر</p>
+                            <p class="text-xs text-purple-300/70">المظهر والتفضيلات الشخصية</p>
+                        </div>
+                    </a>
+                    
+                    <a href="#privacy" class="settings-tab group flex items-center p-4 rounded-lg transition-all duration-200 hover:bg-red-600/20">
+                        <div class="w-10 h-10 rounded-full bg-red-600/20 group-hover:bg-red-600/40 flex items-center justify-center mr-3 transition-all duration-200">
+                            <i class="fas fa-lock text-red-400"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-white">الخصوصية</p>
+                            <p class="text-xs text-red-300/70">إعدادات الخصوصية والحساب</p>
+                        </div>
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- محتوى الإعدادات -->
+        <div class="lg:col-span-9">
+            <!-- قسم الملف الشخصي -->
+            <div id="profile" class="settings-content block">
+                <div class="bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-gray-700/50 mb-8">
+                    <h2 class="text-2xl font-bold text-white mb-8 flex items-center pb-4 border-b border-gray-700/50">
+                        <i class="fas fa-user-circle mr-3 text-blue-400"></i>
+                        المعلومات الشخصية
+                    </h2>
+                    
+                    <form id="profileForm" action="{{ url_for('update_profile') }}" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <div class="mb-8">
+                            <label class="block text-lg font-medium text-blue-300 mb-4">الصورة الشخصية</label>
+                            <div class="flex items-center flex-wrap md:flex-nowrap gap-6">
+                                <div class="relative group">
+                                    <div id="avatarContainer" class="w-32 h-32 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-3xl overflow-hidden border-4 border-blue-500/30 shadow-lg">
+                                        {% if current_user.profile_image %}
+                                        <img id="profileImagePreview" data-original-src="{{ url_for('static', filename='uploads/profiles/' + current_user.profile_image) }}" class="w-32 h-32 rounded-full object-cover" src="{{ url_for('static', filename='uploads/profiles/' + current_user.profile_image) }}" alt="صورة الملف الشخصي">
+                                        <span id="profileInitial" class="text-3xl hidden">{{ current_user.username[0]|upper }}</span>
+                                        {% else %}
+                                        <img id="profileImagePreview" class="w-32 h-32 rounded-full object-cover hidden" src="" alt="صورة الملف الشخصي">
+                                        <span id="profileInitial" class="text-3xl">{{ current_user.username[0]|upper }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="absolute inset-0 bg-black/50 rounded-full opacity-0 flex items-center justify-center group-hover:opacity-100 transition-opacity duration-300 cursor-pointer">
+                                        <label for="avatarUpload" class="w-full h-full flex items-center justify-center cursor-pointer">
+                                            <i class="fas fa-camera text-white text-2xl"></i>
+                                            <input type="file" id="avatarUpload" name="avatar" class="hidden" accept="image/*">
+                                        </label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-white mb-2">تغيير صورتك الشخصية</h3>
+                                    <p class="text-gray-400 mb-3">اختر صورة تعبر عنك. تظهر الصورة الشخصية في ملفك الشخصي وفي التعليقات.</p>
+                                    <div class="text-sm text-blue-300/70 space-y-1">
+                                        <p><i class="fas fa-check-circle mr-2"></i> الصيغ المدعومة: JPG, PNG, GIF</p>
+                                        <p><i class="fas fa-check-circle mr-2"></i> الحد الأقصى للحجم: 2MB</p>
+                                        <p><i class="fas fa-check-circle mr-2"></i> الأبعاد المثالية: 400×400 بكسل</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="avatarPreview" class="mt-4 hidden bg-gray-900/50 p-4 rounded-lg border border-gray-700/50">
+                                <p class="text-white mb-2">معاينة الصورة الجديدة</p>
+                                <div class="flex items-center gap-4">
+                                    <img id="previewImage" class="w-20 h-20 rounded-full object-cover border-2 border-blue-500">
+                                    <div>
+                                        <button type="button" id="cancelUpload" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm text-white transition">إلغاء</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div>
+                                <label class="block text-lg font-medium text-blue-300 mb-2">اسم المستخدم</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <input type="text" id="username" name="username" value="{{ current_user.username }}"
+                                        class="w-full bg-gray-900/50 border border-gray-700/70 rounded-lg px-4 py-3 pr-12 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" required>
+                                </div>
+                                <p class="mt-2 text-sm text-gray-400">اسم المستخدم الخاص بك يظهر في ملفك الشخصي وفي التعليقات</p>
+                            </div>
+                            <div>
+                                <label class="block text-lg font-medium text-blue-300 mb-2">البريد الإلكتروني</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500">
+                                        <i class="fas fa-envelope"></i>
+                                    </span>
+                                    <input type="email" id="email" name="email" value="{{ current_user.email }}"
+                                        class="w-full bg-gray-900/50 border border-gray-700/70 rounded-lg px-4 py-3 pr-12 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" required>
+                                </div>
+                                <p class="mt-2 text-sm text-gray-400">يستخدم بريدك الإلكتروني للتواصل معك وإرسال الإشعارات</p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-all duration-200 text-white flex items-center">
+                                <i class="fas fa-save mr-2"></i>
+                                حفظ التغييرات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- قسم الأمان -->
+            <div id="security" class="settings-content hidden">
+                <div class="bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-gray-700/50 mb-8">
+                    <h2 class="text-2xl font-bold text-white mb-8 flex items-center pb-4 border-b border-gray-700/50">
+                        <i class="fas fa-shield-alt mr-3 text-green-400"></i>
+                        كلمة المرور
+                    </h2>
+
+                    <form id="passwordForm" action="{{ url_for('change_password') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="mb-6">
+                            <label class="block text-lg font-medium text-green-300 mb-2">كلمة المرور الحالية</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input type="password" id="currentPassword" name="current_password"
+                                    class="w-full bg-gray-900/50 border border-gray-700/70 rounded-lg px-4 py-3 pr-12 text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200" required>
+                            </div>
+                            <p class="text-red-400 text-sm mt-2 hidden" id="currentPasswordError">كلمة المرور الحالية غير صحيحة</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-lg font-medium text-green-300 mb-2">كلمة المرور الجديدة</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500">
+                                        <i class="fas fa-key"></i>
+                                    </span>
+                                    <input type="password" id="newPassword" name="new_password"
+                                        class="w-full bg-gray-900/50 border border-gray-700/70 rounded-lg px-4 py-3 pr-12 text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200" required>
+                                </div>
+                                <p class="text-sm text-gray-400 mt-2">يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-lg font-medium text-green-300 mb-2">تأكيد كلمة المرور الجديدة</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500">
+                                        <i class="fas fa-check-double"></i>
+                                    </span>
+                                    <input type="password" id="confirmPassword" name="confirm_password"
+                                        class="w-full bg-gray-900/50 border border-gray-700/70 rounded-lg px-4 py-3 pr-12 text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200" required>
+                                </div>
+                                <p class="text-red-400 text-sm mt-2 hidden" id="passwordMatchError">كلمة المرور غير متطابقة</p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-all duration-200 text-white flex items-center">
+                                <i class="fas fa-key mr-2"></i>
+                                تغيير كلمة المرور
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- API Key Management -->
+                <div class="bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-gray-700/50">
+                    <h2 class="text-2xl font-bold text-white mb-8 flex items-center pb-4 border-b border-gray-700/50">
+                        <i class="fas fa-key mr-3 text-yellow-400"></i>
+                        إدارة مفاتيح API
+                    </h2>
+                    <p class="text-gray-400 mb-6">استخدم مفتاح API الخاص بك لربط التطبيق بمشاريعك الخارجية مثل VirusTotal أو الأدوات الأمنية الأخرى</p>
+                    
+                    <!-- CSRF token لطلبات API -->
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    
+                    <div class="bg-gradient-to-r from-gray-900/70 to-gray-800/70 rounded-xl p-6 border border-gray-700/70">
+                        <div class="mb-6">
+                            <label class="block text-lg font-medium text-yellow-300 mb-4">مفتاح API الخاص بك</label>
+                            <div class="flex flex-col md:flex-row items-stretch gap-4">
+                                <div class="relative flex-1">
+                                    <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500">
+                                        <i class="fas fa-fingerprint"></i>
+                                    </span>
+                                    <input type="text" id="apiKeyDisplay" 
+                                        data-key="{% if current_user.api_key %}{{ current_user.api_key }}{% else %}{% endif %}" 
+                                        value="{% if current_user.api_key %}•••••••••••••••••••{% else %}لا يوجد مفتاح API{% endif %}" 
+                                        class="w-full bg-gray-900/70 border border-gray-700/70 rounded-lg px-4 py-3 pr-12 text-white font-mono text-base focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-200" readonly>
+                                    <button type="button" onclick="showHideKey()" id="toggleApiKey" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-400 transition-all duration-200"
+                                        {% if not current_user.api_key %}disabled{% endif %}>
+                                        <i class="fas fa-eye text-lg" id="toggleIcon"></i>
+                                    </button>
+                                </div>
+                                <button type="button" onclick="copyApiKeyFunc()" id="copyApiKey" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-all duration-200 flex items-center justify-center" 
+                                    {% if not current_user.api_key %}disabled{% endif %}>
+                                    <i class="fas fa-copy mr-2"></i>
+                                    <span>نسخ المفتاح</span>
+                                </button>
+                                
+                                <!-- وظائف JavaScript المضمنة -->
+                                <script>
+                                    function showHideKey() {
+                                        var keyInput = document.getElementById('apiKeyDisplay');
+                                        var icon = document.getElementById('toggleIcon');
+                                        var actualKey = keyInput.getAttribute('data-key');
+                                        
+                                        if (actualKey && actualKey !== '') {
+                                            if (keyInput.value === '•••••••••••••••••••' || keyInput.value.indexOf('•') >= 0) {
+                                                keyInput.value = actualKey;
+                                                icon.classList.remove('fa-eye');
+                                                icon.classList.add('fa-eye-slash');
+                                            } else {
+                                                keyInput.value = '•••••••••••••••••••';
+                                                icon.classList.remove('fa-eye-slash');
+                                                icon.classList.add('fa-eye');
+                                            }
+                                        }
+                                    }
+                                    
+                                    function copyApiKeyFunc() {
+                                        var keyInput = document.getElementById('apiKeyDisplay');
+                                        var actualKey = keyInput.getAttribute('data-key');
+                                        
+                                        if (!actualKey || actualKey === '') {
+                                            alert('لا يوجد مفتاح للنسخ!');
+                                            return;
+                                        }
+                                        
+                                        // إنشاء عنصر نصي مؤقت
+                                        var tempInput = document.createElement('textarea');
+                                        tempInput.value = actualKey;
+                                        document.body.appendChild(tempInput);
+                                        
+                                        // تحديد النص ونسخه
+                                        tempInput.select();
+                                        tempInput.setSelectionRange(0, 99999);
+                                        document.execCommand('copy');
+                                        
+                                        // إزالة العنصر المؤقت
+                                        document.body.removeChild(tempInput);
+                                        
+                                        alert('تم نسخ المفتاح بنجاح!');
+                                    }
+                                </script>
+                            </div>
+                            <p class="text-sm text-gray-400 mt-3">
+                                <i class="fas fa-info-circle mr-1 text-blue-400"></i>
+                                لا تشارك مفتاح API الخاص بك مع أي شخص. يتيح هذا المفتاح الوصول إلى حسابك.
+                            </p>
+                        </div>
+
+                        <div class="flex flex-wrap gap-4 mb-8">
+                            <button type="button" onclick="generateNewKey()" id="generateApiKey" class="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-all duration-200 text-white flex items-center">
+                                <i class="fas fa-sync-alt mr-2"></i>
+                                <span>{% if current_user.api_key %}إعادة توليد{% else %}توليد مفتاح جديد{% endif %}</span>
+                            </button>
+                            {% if current_user.api_key %}
+                            <button type="button" onclick="revokeKey()" id="revokeApiKey" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-all duration-200 text-white flex items-center">
+                                <i class="fas fa-times-circle mr-2"></i>
+                                <span>إلغاء المفتاح</span>
+                            </button>
+                            <button type="button" onclick="testApiConnection()" id="testApiKey" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-all duration-200 text-white flex items-center">
+                                <i class="fas fa-vial mr-2"></i>
+                                <span>اختبار الاتصال</span>
+                            </button>
+                            {% endif %}
+                            
+                            <script>
+                                function generateNewKey() {
+                                    if (confirm("هل أنت متأكد من توليد مفتاح API جديد؟")) {
+                                        document.getElementById('generateApiKey').disabled = true;
+                                        document.getElementById('generateApiKey').innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> جاري التوليد...';
+                                        
+                                        // الحصول على CSRF token من الصفحة
+                                        const csrf_token = document.querySelector('input[name="csrf_token"]').value;
+                                        
+                                        fetch('/api/generate-key', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRFToken': csrf_token
+                                            },
+                                            body: JSON.stringify({
+                                                csrf_token: csrf_token
+                                            })
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success && data.api_key) {
+                                                var apiKeyInput = document.getElementById('apiKeyDisplay');
+                                                apiKeyInput.setAttribute('data-key', data.api_key);
+                                                
+                                                // إعادة تهيئة الصفحة
+                                                alert('تم توليد مفتاح API بنجاح');
+                                                window.location.reload();
+                                            } else {
+                                                alert('فشل في توليد مفتاح API: ' + (data.message || 'خطأ غير معروف'));
+                                                document.getElementById('generateApiKey').disabled = false;
+                                                document.getElementById('generateApiKey').innerHTML = '<i class="fas fa-sync-alt mr-2"></i> توليد مفتاح جديد';
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                            alert('حدث خطأ أثناء الاتصال بالخادم');
+                                            document.getElementById('generateApiKey').disabled = false;
+                                            document.getElementById('generateApiKey').innerHTML = '<i class="fas fa-sync-alt mr-2"></i> توليد مفتاح جديد';
+                                        });
+                                    }
+                                }
+                                
+                                function testApiConnection() {
+                                    document.getElementById('testApiKey').disabled = true;
+                                    document.getElementById('testApiKey').innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> جاري الاختبار...';
+                                    
+                                    fetch('/api/test')
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                alert('الاتصال بالاي بي آي يعمل بشكل صحيح!\n\n' + data.message + '\nالوقت: ' + data.time);
+                                            } else {
+                                                alert('فشل الاتصال بالاي بي آي');
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                            alert('حدث خطأ أثناء الاتصال بالخادم');
+                                        })
+                                        .finally(() => {
+                                            document.getElementById('testApiKey').disabled = false;
+                                            document.getElementById('testApiKey').innerHTML = '<i class="fas fa-vial mr-2"></i> <span>اختبار الاتصال</span>';
+                                        });
+                                }
+                                
+                                function revokeKey() {
+                                    if (confirm("هل أنت متأكد من إلغاء مفتاح API؟ لن تتمكن من استخدامه بعد ذلك.")) {
+                                        document.getElementById('revokeApiKey').disabled = true;
+                                        document.getElementById('revokeApiKey').innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> جاري الإلغاء...';
+                                        
+                                        // الحصول على CSRF token من الصفحة
+                                        const csrf_token = document.querySelector('input[name="csrf_token"]').value;
+                                        
+                                        fetch('/api/revoke-key', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRFToken': csrf_token
+                                            },
+                                            body: JSON.stringify({
+                                                csrf_token: csrf_token
+                                            })
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                // إعادة تهيئة الصفحة
+                                                alert('تم إلغاء مفتاح API بنجاح');
+                                                window.location.reload();
+                                            } else {
+                                                alert('فشل في إلغاء مفتاح API: ' + (data.message || 'خطأ غير معروف'));
+                                                document.getElementById('revokeApiKey').disabled = false;
+                                                document.getElementById('revokeApiKey').innerHTML = '<i class="fas fa-times-circle mr-2"></i> إلغاء المفتاح';
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                            alert('حدث خطأ أثناء الاتصال بالخادم');
+                                            document.getElementById('revokeApiKey').disabled = false;
+                                            document.getElementById('revokeApiKey').innerHTML = '<i class="fas fa-times-circle mr-2"></i> إلغاء المفتاح';
+                                        });
+                                    }
+                                }
+                            </script>
+                        </div>
+
+                        <div class="bg-blue-900/20 border border-blue-800/30 rounded-lg p-5">
+                            <h4 class="text-lg font-semibold text-blue-300 mb-3 flex items-center">
+                                <i class="fas fa-lightbulb mr-2"></i>
+                                كيفية الاستخدام
+                            </h4>
+                            <div class="space-y-3">
+                                <div class="flex items-start gap-2">
+                                    <div class="bg-blue-500/20 rounded-full p-1 mt-1">
+                                        <i class="fas fa-check text-blue-400 text-xs"></i>
+                                    </div>
+                                    <p class="text-gray-300">استخدم هذا المفتاح في طلبات API الخاصة بك عن طريق إضافته في Header:</p>
+                                </div>
+                                <div class="bg-gray-900/70 rounded p-3 font-mono text-sm text-blue-300 overflow-x-auto">
+                                    <span class="text-pink-400">X-API-Key:</span> <span class="text-green-400">your-api-key-here</span>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <div class="bg-blue-500/20 rounded-full p-1 mt-1">
+                                        <i class="fas fa-check text-blue-400 text-xs"></i>
+                                    </div>
+                                    <p class="text-gray-300">يمكنك استخدام هذا المفتاح لربط حسابك بخدمات مثل VirusTotal وأدوات التحليل الأخرى.</p>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <div class="bg-blue-500/20 rounded-full p-1 mt-1">
+                                        <i class="fas fa-check text-blue-400 text-xs"></i>
+                                    </div>
+                                    <p class="text-gray-300">إذا اشتبهت في تسريب المفتاح، قم بإلغائه وتوليد مفتاح جديد فوراً.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم الإشعارات -->
+            <div id="notifications" class="settings-content hidden">
+                <div class="bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-gray-700/50">
+                    <h2 class="text-2xl font-bold text-white mb-8 flex items-center pb-4 border-b border-gray-700/50">
+                        <i class="fas fa-bell mr-3 text-yellow-400"></i>
+                        إعدادات الإشعارات
+                    </h2>
+
+                    <form id="notificationsForm" action="{{ url_for('update_settings') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg border border-gray-700/50 hover:border-yellow-600/30 transition-all duration-200">
+                                <div>
+                                    <h3 class="text-lg font-medium text-white mb-1">الإشعارات البريدية</h3>
+                                    <p class="text-gray-400">استقبل تحديثات هامة عبر البريد الإلكتروني</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="emailNotifications" name="email_notifications" class="sr-only peer" {% if user_settings and user_settings.email_notifications %}checked{% endif %}>
+                                    <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-yellow-500"></div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg border border-gray-700/50 hover:border-yellow-600/30 transition-all duration-200">
+                                <div>
+                                    <h3 class="text-lg font-medium text-white mb-1">تنبيهات الأمان</h3>
+                                    <p class="text-gray-400">إشعارات عن تسجيل الدخول والأنشطة المشبوهة</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="securityNotifications" name="security_notifications" class="sr-only peer" {% if user_settings and user_settings.security_notifications %}checked{% endif %}>
+                                    <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-yellow-500"></div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg border border-gray-700/50 hover:border-yellow-600/30 transition-all duration-200">
+                                <div>
+                                    <h3 class="text-lg font-medium text-white mb-1">إشعارات التطبيق</h3>
+                                    <p class="text-gray-400">إظهار تنبيهات داخل التطبيق</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="appNotifications" name="app_notifications" class="sr-only peer" {% if user_settings and user_settings.app_notifications %}checked{% endif %}>
+                                    <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-yellow-500"></div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg border border-gray-700/50 hover:border-yellow-600/30 transition-all duration-200">
+                                <div>
+                                    <h3 class="text-lg font-medium text-white mb-1">النشرة الإخبارية</h3>
+                                    <p class="text-gray-400">تلقي آخر التحديثات والأخبار عن الأمن السيبراني</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="newsletter" name="newsletter" class="sr-only peer" {% if user_settings and user_settings.newsletter %}checked{% endif %}>
+                                    <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-yellow-500"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end mt-8">
+                            <button type="submit" class="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 rounded-lg font-medium transition-all duration-200 text-white flex items-center">
+                                <i class="fas fa-save mr-2"></i>
+                                حفظ الإعدادات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- قسم التفضيلات/المظهر -->
+            <div id="preferences" class="settings-content hidden">
+                <div class="bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-gray-700/50">
+                    <h2 class="text-2xl font-bold text-white mb-8 flex items-center pb-4 border-b border-gray-700/50">
+                        <i class="fas fa-palette mr-3 text-purple-400"></i>
+                        تخصيص المظهر
+                    </h2>
+
+                    <form id="preferencesForm" action="{{ url_for('update_settings') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <div class="mb-8">
+                            <h3 class="text-lg font-medium text-purple-300 mb-4">المظهر</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="relative">
+                                    <input type="radio" name="theme" id="dark-theme" value="dark" class="sr-only peer">
+                                    <label for="dark-theme" class="flex flex-col bg-gray-900/70 border-2 border-gray-700 hover:border-purple-500 peer-checked:border-purple-500 rounded-xl p-6 cursor-pointer transition-all duration-200">
+                                        <div class="w-full h-24 rounded-lg bg-gradient-to-br from-gray-900 to-gray-800 mb-4 shadow-lg"></div>
+                                        <div class="text-center">
+                                            <i class="fas fa-moon text-2xl text-purple-400 mb-2"></i>
+                                            <h4 class="font-medium text-white">المظهر الداكن</h4>
+                                            <p class="text-gray-400 text-sm">مناسب للاستخدام الليلي</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                
+                                <div class="relative">
+                                    <input type="radio" name="theme" id="light-theme" value="light" class="sr-only peer">
+                                    <label for="light-theme" class="flex flex-col bg-gray-900/70 border-2 border-gray-700 hover:border-purple-500 peer-checked:border-purple-500 rounded-xl p-6 cursor-pointer transition-all duration-200">
+                                        <div class="w-full h-24 rounded-lg bg-gradient-to-br from-gray-100 to-white mb-4 shadow-lg"></div>
+                                        <div class="text-center">
+                                            <i class="fas fa-sun text-2xl text-yellow-400 mb-2"></i>
+                                            <h4 class="font-medium text-white">المظهر الفاتح</h4>
+                                            <p class="text-gray-400 text-sm">مناسب للاستخدام النهاري</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                
+                                <div class="relative">
+                                    <input type="radio" name="theme" id="system-theme" value="system" class="sr-only peer">
+                                    <label for="system-theme" class="flex flex-col bg-gray-900/70 border-2 border-gray-700 hover:border-purple-500 peer-checked:border-purple-500 rounded-xl p-6 cursor-pointer transition-all duration-200">
+                                        <div class="w-full h-24 rounded-lg bg-gradient-to-r from-gray-900 to-gray-100 mb-4 shadow-lg"></div>
+                                        <div class="text-center">
+                                            <i class="fas fa-laptop text-2xl text-blue-400 mb-2"></i>
+                                            <h4 class="font-medium text-white">تلقائي</h4>
+                                            <p class="text-gray-400 text-sm">يتبع إعدادات النظام</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- سكريبت لربط مع مدير المظاهر -->
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    // التحقق من وجود مدير المظاهر
+                                    if (window.themeManager) {
+                                        // ضبط قيمة المظهر المختار
+                                        const currentTheme = window.themeManager.getStoredTheme();
+                                        
+                                        // تحديد المظهر المختار في نموذج التبديل
+                                        document.getElementById(currentTheme + '-theme').checked = true;
+                                        
+                                        // استجابة للتغيير في الاختيار
+                                        document.querySelectorAll('input[name="theme"]').forEach(input => {
+                                            input.addEventListener('change', function() {
+                                                if (this.checked) {
+                                                    window.themeManager.setTheme(this.value);
+                                                }
+                                            });
+                                        });
+                                    }
+                                });
+                            </script>
+                        </div>
+                        
+                        <div class="mb-8">
+                            <h3 class="text-lg font-medium text-purple-300 mb-4">اللغة</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <select id="language" name="language" class="w-full bg-gray-900/70 border border-gray-700/70 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200">
+                                        <option value="ar" selected>العربية</option>
+                                        <option value="en">English</option>
+                                        <option value="fr">Français</option>
+                                        <option value="es">Español</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <select id="timeFormat" name="time_format" class="w-full bg-gray-900/70 border border-gray-700/70 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200">
+                                        <option value="12">12 ساعة (AM/PM)</option>
+                                        <option value="24">24 ساعة</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-all duration-200 text-white flex items-center">
+                                <i class="fas fa-save mr-2"></i>
+                                حفظ الإعدادات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- قسم الخصوصية -->
+            <div id="privacy" class="settings-content hidden">
+                <div class="bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-gray-700/50 mb-8">
+                    <h2 class="text-2xl font-bold text-white mb-8 flex items-center pb-4 border-b border-gray-700/50">
+                        <i class="fas fa-user-shield mr-3 text-red-400"></i>
+                        الخصوصية والأمان
+                    </h2>
+
+                    <form id="privacyForm" action="{{ url_for('update_settings') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <div class="space-y-6 mb-8">
+                            <div class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg border border-gray-700/50 hover:border-red-600/30 transition-all duration-200">
+                                <div>
+                                    <h3 class="text-lg font-medium text-white mb-1">الحساب الخاص</h3>
+                                    <p class="text-gray-400">إخفاء نشاطك وتحليلاتك عن المستخدمين الآخرين</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="privateAccount" name="private_account" class="sr-only peer" {% if user_settings and user_settings.private_account %}checked{% endif %}>
+                                    <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg border border-gray-700/50 hover:border-red-600/30 transition-all duration-200">
+                                <div>
+                                    <h3 class="text-lg font-medium text-white mb-1">تفعيل تسجيل الدخول الآمن</h3>
+                                    <p class="text-gray-400">طلب تأكيد إضافي عند تسجيل الدخول من جهاز جديد</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="secureLogin" name="secure_login" class="sr-only peer" {% if user_settings and user_settings.secure_login %}checked{% endif %}>
+                                    <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg border border-gray-700/50 hover:border-red-600/30 transition-all duration-200">
+                                <div>
+                                    <h3 class="text-lg font-medium text-white mb-1">جمع بيانات الاستخدام</h3>
+                                    <p class="text-gray-400">السماح بجمع بيانات مجهولة لتحسين الخدمة</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="analytics" name="analytics" class="sr-only peer" {% if user_settings and user_settings.analytics %}checked{% endif %}>
+                                    <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end mb-8">
+                            <button type="submit" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-all duration-200 text-white flex items-center">
+                                <i class="fas fa-save mr-2"></i>
+                                حفظ الإعدادات
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-12 pt-6 border-t border-gray-700/50">
+                        <h3 class="text-xl font-semibold text-red-400 mb-4 flex items-center">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            منطقة الخطر
+                        </h3>
+                        
+                        <div class="bg-red-900/20 border border-red-700/30 rounded-xl p-6 mb-6">
+                            <h4 class="text-lg font-medium text-white mb-2">حذف الحساب</h4>
+                            <p class="text-gray-300 mb-4">هذا الإجراء سيحذف حسابك وجميع البيانات المرتبطة به بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</p>
+                            <button id="deleteAccountBtn" class="px-6 py-3 bg-red-600 hover:bg-red-700 border border-red-800 rounded-lg font-medium transition-all duration-200 flex items-center gap-2">
+                                <i class="fas fa-trash-alt"></i>
+                                <span>حذف حسابي</span>
+                            </button>
+                        </div>
+                        
+                        <!-- نموذج تأكيد الحذف (مخفي افتراضيًا) -->
+                        <div id="deleteConfirm" class="hidden bg-gray-900/80 rounded-xl p-6 border border-red-600">
+                            <h4 class="text-lg font-bold text-red-400 mb-4">تأكيد حذف الحساب</h4>
+                            <p class="text-white mb-4">هذا الإجراء سيحذف حسابك وجميع بياناتك نهائياً ولا يمكن التراجع عنه. يرجى إدخال كلمة المرور للتأكيد.</p>
+                            
+                            <div class="mb-4">
+                                <label class="block text-gray-300 mb-2">كلمة المرور</label>
+                                <input type="password" id="deletePassword" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            </div>
+                            
+                            <div class="flex items-center gap-3">
+                                <button id="confirmDelete" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition flex items-center">
+                                    <i class="fas fa-check mr-2"></i>
+                                    تأكيد الحذف
+                                </button>
+                                <button id="cancelDelete" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-medium transition flex items-center">
+                                    <i class="fas fa-times mr-2"></i>
+                                    إلغاء
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .settings-tab.active {
+        background-color: rgba(37, 99, 235, 0.2);
+    }
+    
+    .settings-tab.active .w-10 {
+        background-color: rgba(37, 99, 235, 0.4);
+    }
+
+    .settings-content {
+        animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        z-index: 1000;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    }
+
+    .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .toast.success {
+        background-color: rgba(16, 185, 129, 0.9);
+        border-left: 4px solid rgb(16, 185, 129);
+    }
+
+    .toast.error {
+        background-color: rgba(239, 68, 68, 0.9);
+        border-left: 4px solid rgb(239, 68, 68);
+    }
+</style>
+
+<!-- ملف JavaScript الخاص بمفتاح API -->
+<script src="{{ url_for('static', filename='js/api-key-fix.js') }}"></script>
+
+<!-- ملف JavaScript الخاص بحذف الحساب -->
+<script src="{{ url_for('static', filename='js/account-delete.js') }}"></script>
+
+<!-- External Settings JS - Enhanced Version -->
+<script src="{{ url_for('static', filename='js/settings-enhanced.js') }}"></script>
+{% endblock %}

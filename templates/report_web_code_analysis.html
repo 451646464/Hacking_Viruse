@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}Code Analysis Report{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" id="report-content">
+    <!-- Modern Header -->
+    <div class="relative mb-8">
+        <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-3xl blur-xl"></div>
+        <div class="relative bg-gray-900/50 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/30 shadow-2xl">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                        <i class="fas fa-code text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">Code Security Analysis</h1>
+                        <p class="text-gray-400 mt-2 flex items-center gap-2">
+                            <i class="fas fa-shield-alt text-cyan-400"></i>
+                            <span>Comprehensive Vulnerability Detection</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end gap-2">
+                    <div class="flex items-center gap-2 text-gray-400 text-sm">
+                        <i class="fas fa-calendar text-cyan-400"></i>
+                        <span>{{ analysis.created_at.strftime('%Y-%m-%d %H:%M:%S') if analysis.created_at else 'N/A' }}</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-400 text-sm">
+                        <i class="fas fa-file-code text-blue-400"></i>
+                        <span>{{ analysis.analysis_type|upper if analysis.analysis_type else 'CODE' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Summary Card -->
+    <div class="relative mb-8">
+        {% set is_vulnerable = (vulnerabilities|length > 0) or (result and result.get('is_vulnerable', False)) %}
+        <div class="absolute inset-0 bg-gradient-to-r {% if is_vulnerable %}from-red-500/5 to-orange-500/5{% else %}from-green-500/5 to-emerald-500/5{% endif %} rounded-3xl blur-xl"></div>
+        <div class="relative bg-gray-900/30 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/30 shadow-xl">
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-8">
+                <div class="flex items-start gap-6 flex-1">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br {% if is_vulnerable %}from-red-500/30 to-orange-600/30{% else %}from-green-500/30 to-emerald-600/30{% endif %} flex items-center justify-center border border-{% if is_vulnerable %}red{% else %}green{% endif %}-500/30">
+                        <i class="fas fa-file-code {% if is_vulnerable %}text-red-400{% else %}text-green-400{% endif %} text-3xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-2xl font-bold text-white mb-3">
+                            <span class="bg-clip-text text-transparent bg-gradient-to-r {% if is_vulnerable %}from-red-400 to-orange-300{% else %}from-green-400 to-emerald-300{% endif %}">Analysis Summary</span>
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                            <div class="flex items-center gap-2 text-gray-300">
+                                <i class="fas fa-lines-leaning text-cyan-400"></i>
+                                <span>Lines: <strong>{{ code.split('\n')|length }}</strong></span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-300">
+                                <i class="fas fa-bug text-red-400"></i>
+                                <span>Vulnerabilities: <strong>{{ vulnerabilities|length }}</strong></span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-300">
+                                <i class="fas fa-code-branch text-purple-400"></i>
+                                <span>Type: <strong>{{ analysis.analysis_type|upper if analysis.analysis_type else 'CODE' }}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center gap-4">
+                    <div class="px-8 py-4 rounded-2xl text-2xl font-bold backdrop-blur-sm border
+                        {% if is_vulnerable %} 
+                        bg-red-900/30 text-red-300 border-red-500/30 shadow-lg shadow-red-500/10
+                        {% else %} 
+                        bg-green-900/30 text-green-300 border-green-500/30 shadow-lg shadow-green-500/10
+                        {% endif %}">
+                        {% if is_vulnerable %}VULNERABLE{% else %}SECURE{% endif %}
+                    </div>
+                    <div class="text-center">
+                        <div class="text-sm text-gray-400 mb-1">Risk Level</div>
+                        <div class="flex gap-1">
+                            {% if vulnerabilities|length >= 5 %}
+                                {% for i in range(5) %}
+                                <div class="w-8 h-2 rounded-full {% if i < 5 %}bg-red-500{% else %}bg-gray-700{% endif %}"></div>
+                                {% endfor %}
+                            {% elif vulnerabilities|length >= 3 %}
+                                {% for i in range(5) %}
+                                <div class="w-8 h-2 rounded-full {% if i < 4 %}bg-orange-500{% else %}bg-gray-700{% endif %}"></div>
+                                {% endfor %}
+                            {% elif vulnerabilities|length >= 1 %}
+                                {% for i in range(5) %}
+                                <div class="w-8 h-2 rounded-full {% if i < 2 %}bg-yellow-500{% else %}bg-gray-700{% endif %}"></div>
+                                {% endfor %}
+                            {% else %}
+                                {% for i in range(5) %}
+                                <div class="w-8 h-2 rounded-full {% if i < 1 %}bg-green-500{% else %}bg-gray-700{% endif %}"></div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ML Predictions -->
+    {% if result and result.get('predictions') %}
+    <div class="relative mb-8">
+        <div class="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-gray-700/30">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <i class="fas fa-brain text-purple-400"></i>
+                <span>ML Model Predictions</span>
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    {% for category, probability in result.predictions.items() %}
+                    <div class="bg-gray-900/50 rounded-xl p-4 border border-gray-700/30">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-300 font-semibold">{{ category }}</span>
+                            <span class="text-cyan-400 font-bold">{{ '%.1f'|format(probability * 100) }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2.5">
+                            <div class="bg-gradient-to-r from-cyan-500 to-blue-500 h-2.5 rounded-full" style="width: {{ probability * 100 }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% if graphJSON %}
+                <div class="bg-gray-900/50 rounded-xl p-4 border border-gray-700/30">
+                    <div id="vulnerabilityChart" class="w-full h-80"></div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Detected Vulnerabilities -->
+    {% if vulnerabilities %}
+    <div class="relative mb-8">
+        <div class="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-gray-700/30">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <i class="fas fa-exclamation-triangle text-red-400"></i>
+                <span>Detected Vulnerabilities ({{ vulnerabilities|length }})</span>
+            </h2>
+
+            <div class="space-y-4">
+                {% for vuln in vulnerabilities %}
+                <div class="bg-gray-900/50 backdrop-blur-xl rounded-xl p-6 border-l-4 
+                    {% if vuln.severity == 'high' or vuln.severity == 'critical' %}border-red-500
+                    {% elif vuln.severity == 'medium' %}border-yellow-500
+                    {% else %}border-blue-500{% endif %} hover:bg-gray-800/50 transition-all">
+                    
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="px-3 py-1 rounded-full text-xs font-bold
+                                    {% if vuln.severity == 'high' or vuln.severity == 'critical' %}bg-red-900/30 text-red-300 border border-red-500/30
+                                    {% elif vuln.severity == 'medium' %}bg-yellow-900/30 text-yellow-300 border border-yellow-500/30
+                                    {% else %}bg-blue-900/30 text-blue-300 border border-blue-500/30{% endif %}">
+                                    {{ vuln.severity|upper if vuln.severity else 'MEDIUM' }}
+                                </span>
+                                <h3 class="text-lg font-bold text-white">{{ vuln.type if vuln.type else 'Security Issue' }}</h3>
+                            </div>
+                            
+                            <p class="text-gray-300 mb-3">{{ vuln.description if vuln.description else 'Potential security vulnerability detected' }}</p>
+                            
+                            {% if vuln.line %}
+                            <div class="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                                <i class="fas fa-map-marker-alt text-cyan-400"></i>
+                                <span>Line: <strong class="text-cyan-400">{{ vuln.line }}</strong></span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if vuln.code %}
+                            <div class="mt-3 bg-gray-950/50 rounded-lg p-3 border border-gray-700/30">
+                                <pre class="text-sm text-gray-300 overflow-x-auto"><code>{{ vuln.code }}</code></pre>
+                            </div>
+                            {% endif %}
+                            
+                            {% if vuln.recommendation %}
+                            <div class="mt-3 bg-blue-900/10 border border-blue-500/30 rounded-lg p-3">
+                                <p class="text-sm text-blue-300">
+                                    <i class="fas fa-lightbulb text-blue-400 mr-2"></i>
+                                    <strong>Recommendation:</strong> {{ vuln.recommendation }}
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-shield-alt text-3xl
+                                {% if vuln.severity == 'high' or vuln.severity == 'critical' %}text-red-500
+                                {% elif vuln.severity == 'medium' %}text-yellow-500
+                                {% else %}text-blue-500{% endif %}"></i>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="relative mb-8">
+        <div class="bg-green-900/20 border border-green-500/30 rounded-3xl p-8">
+            <div class="text-center">
+                <i class="fas fa-check-circle text-green-400 text-5xl mb-4"></i>
+                <h3 class="text-2xl font-bold text-green-300 mb-2">No Vulnerabilities Detected</h3>
+                <p class="text-green-200/70">The code appears to be secure based on our analysis</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Source Code -->
+    <div class="relative mb-8">
+        <div class="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-gray-700/30">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <i class="fas fa-code text-cyan-400"></i>
+                <span>Source Code</span>
+            </h2>
+            
+            <div class="bg-gray-950/80 rounded-xl p-4 border border-gray-700/30 overflow-hidden">
+                <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-700/30">
+                    <span class="text-gray-400 text-sm">{{ code.split('\n')|length }} lines</span>
+                    <button onclick="copyCode()" class="px-3 py-1 bg-cyan-900/30 hover:bg-cyan-800/50 text-cyan-400 border border-cyan-500/30 rounded text-xs font-medium transition-colors">
+                        <i class="fas fa-copy mr-1"></i> Copy
+                    </button>
+                </div>
+                <pre class="overflow-x-auto"><code id="sourceCode" class="text-sm text-gray-300">{{ code }}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Actions -->
+    <div class="relative mb-8">
+        <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-3xl blur-xl"></div>
+        <div class="relative bg-gray-900/30 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/30 shadow-xl">
+            <h2 class="text-2xl font-bold text-white mb-8 text-center flex items-center justify-center gap-3">
+                <i class="fas fa-tasks text-cyan-400"></i>
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-300">Report Actions</span>
+            </h2>
+
+            <div class="flex flex-wrap gap-4 justify-center">
+                <a href="{{ url_for('web_code_analysis') }}"
+                   class="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-800 transition-all transform hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-redo"></i> New Analysis
+                </a>
+
+                <a href="{{ url_for('dashboard') }}"
+                   class="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-800 transition-all transform hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+
+                <button onclick="window.print()"
+                        class="px-8 py-4 bg-gradient-to-r from-green-600 to-teal-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-teal-700 transition-all transform hover:-translate-y-1 hover:shadow-lg hover:shadow-green-500/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-print"></i> Print
+                </button>
+
+                <button onclick="confirmDelete('code', {{ analysis_id }})"
+                        class="px-8 py-4 bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-900 transition-all transform hover:-translate-y-1 hover:shadow-lg hover:shadow-red-500/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-trash-alt"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+// Vulnerability Chart
+{% if graphJSON %}
+var graphData = {{ graphJSON|safe }};
+Plotly.newPlot('vulnerabilityChart', graphData.data, graphData.layout, {responsive: true});
+{% endif %}
+
+// Copy code function
+function copyCode() {
+    const code = document.getElementById('sourceCode').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        alert('Code copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+    });
+}
+
+// Delete confirmation
+function confirmDelete(reportType, reportId) {
+    if (confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+        deleteReport(reportType, reportId);
+    }
+}
+
+function deleteReport(reportType, reportId) {
+    fetch(`/delete_code_report/${reportId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Report deleted successfully');
+            window.location.href = "{{ url_for('dashboard') }}";
+        } else {
+            alert('Failed to delete report: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while trying to delete');
+    });
+}
+</script>
+{% endblock %}

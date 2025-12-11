@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}الإعدادات - CyberHomesh{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mb-8 card-hover">
+        <h1 class="text-2xl font-bold text-white mb-2 flex items-center">
+            <i class="fas fa-cog mr-3 text-primary"></i>
+            إعدادات الحساب
+        </h1>
+        <p class="text-gray-400">إدارة معلومات حسابك وتفضيلات الأمان والإشعارات</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- القائمة الجانبية -->
+        <div class="lg:col-span-1">
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden card-hover">
+                <div class="p-4 border-b border-gray-700">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
+                            {{ current_user.username[0]|upper }}
+                        </div>
+                        <div>
+                            <p class="font-semibold">{{ current_user.username }}</p>
+                            <p class="text-xs text-gray-400">{{ current_user.email }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <nav class="p-2">
+                    <a href="#profile" class="settings-tab active flex items-center p-3 rounded-lg bg-gray-700/50 mb-1 text-white">
+                        <i class="fas fa-user-circle mr-3 text-blue-400"></i>
+                        الملف الشخصي
+                    </a>
+                    <a href="#security" class="settings-tab flex items-center p-3 rounded-lg hover:bg-gray-700/50 mb-1 text-gray-300">
+                        <i class="fas fa-shield-alt mr-3 text-green-400"></i>
+                        الأمان
+                    </a>
+                    <a href="#notifications" class="settings-tab flex items-center p-3 rounded-lg hover:bg-gray-700/50 mb-1 text-gray-300">
+                        <i class="fas fa-bell mr-3 text-yellow-400"></i>
+                        الإشعارات
+                    </a>
+                    <a href="#preferences" class="settings-tab flex items-center p-3 rounded-lg hover:bg-gray-700/50 mb-1 text-gray-300">
+                        <i class="fas fa-sliders-h mr-3 text-purple-400"></i>
+                        التفضيلات
+                    </a>
+                    <a href="#privacy" class="settings-tab flex items-center p-3 rounded-lg hover:bg-gray-700/50 text-gray-300">
+                        <i class="fas fa-lock mr-3 text-red-400"></i>
+                        الخصوصية
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- محتوى الإعدادات -->
+        <div class="lg:col-span-2">
+            <!-- قسم الملف الشخصي -->
+            <div id="profile" class="settings-content block">
+                <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 card-hover">
+                    <h2 class="text-xl font-semibold text-white mb-6 flex items-center">
+                        <i class="fas fa-user-circle mr-3 text-blue-400"></i>
+                        المعلومات الشخصية
+                    </h2>
+                    
+                    <form id="profileForm" action="{{ url_for('update_profile') }}" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="mb-6">
+                            <label class="block text-gray-300 mb-2">الصورة الشخصية</label>
+                            <div class="flex items-center mt-2">
+                                <div class="relative">
+                                    <div id="avatarContainer" class="w-16 h-16 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white font-bold text-xl mr-4">
+                                        {% if current_user.profile_image %}
+                                        <img id="profileImagePreview" class="w-16 h-16 rounded-full object-cover" src="{{ url_for('static', filename='uploads/profiles/' + current_user.profile_image) }}" alt="صورة الملف الشخصي">
+                                        <span id="profileInitial" class="text-xl hidden">{{ current_user.username[0]|upper }}</span>
+                                        {% else %}
+                                        <img id="profileImagePreview" class="w-16 h-16 rounded-full object-cover hidden" src="" alt="صورة الملف الشخصي">
+                                        <span id="profileInitial" class="text-xl">{{ current_user.username[0]|upper }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <label for="avatarUpload" class="cursor-pointer absolute bottom-0 right-0 bg-primary rounded-full p-1">
+                                        <i class="fas fa-camera text-white text-xs"></i>
+                                        <input type="file" id="avatarUpload" name="avatar" class="hidden" accept="image/*">
+                                    </label>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-sm">الصيغ المدعومة: JPG, PNG, GIF</p>
+                                    <p class="text-gray-400 text-sm">الحد الأقصى: 2MB</p>
+                                </div>
+                            </div>
+                            <div id="avatarPreview" class="mt-4 hidden">
+                                <img id="previewImage" class="w-24 h-24 rounded-full object-cover border-2 border-primary">
+                                <button type="button" id="cancelUpload" class="mt-2 text-red-400 text-sm">إلغاء</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-gray-300 mb-2">اسم المستخدم</label>
+                                <input type="text" id="username" name="username" value="{{ current_user.username }}"
+                                    class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">البريد الإلكتروني</label>
+                                <input type="email" id="email" name="email" value="{{ current_user.email }}"
+                                    class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary" required>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-6 py-2 bg-primary hover:bg-blue-600 rounded-lg font-medium transition">حفظ التغييرات</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- قسم الأمان -->
+            <div id="security" class="settings-content hidden">
+                <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 card-hover">
+                    <h2 class="text-xl font-semibold text-white mb-6 flex items-center">
+                        <i class="fas fa-shield-alt mr-3 text-green-400"></i>
+                        إعدادات الأمان
+                    </h2>
+
+                    <div class="mb-8">
+                        <h3 class="text-lg font-medium text-white mb-4">تغيير كلمة المرور</h3>
+
+                        <form id="passwordForm" action="{{ url_for('change_password') }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <div class="mb-4">
+                                <label class="block text-gray-300 mb-2">كلمة المرور الحالية</label>
+                                <input type="password" id="currentPassword" name="current_password"
+                                    class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                <p class="text-red-400 text-sm mt-1 hidden" id="currentPasswordError">كلمة المرور الحالية غير صحيحة</p>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-gray-300 mb-2">كلمة المرور الجديدة</label>
+                                <input type="password" id="newPassword" name="new_password"
+                                    class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                <p class="text-gray-400 text-sm mt-1">يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل</p>
+                            </div>
+
+                            <div class="mb-6">
+                                <label class="block text-gray-300 mb-2">تأكيد كلمة المرور الجديدة</label>
+                                <input type="password" id="confirmPassword" name="confirm_password"
+                                    class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                <p class="text-red-400 text-sm mt-1 hidden" id="passwordMatchError">كلمة المرور غير متطابقة</p>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit" class="px-6 py-2 bg-primary hover:bg-blue-600 rounded-lg font-medium transition">تغيير كلمة المرور</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- API Key Management -->
+                    <div class="mt-8 pt-8 border-t border-gray-700">
+                        <h3 class="text-lg font-medium text-white mb-4 flex items-center">
+                            <i class="fas fa-key text-yellow-400 mr-3"></i>
+                            إدارة مفاتيح API
+                        </h3>
+                        <p class="text-gray-400 text-sm mb-6">استخدم مفتاح API الخاص بك لربط التطبيق بمشاريعك الخارجية (مثل VirusTotal وغيرها)</p>
+                        
+                        <div class="bg-gray-900/50 rounded-xl p-6 border border-gray-700">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex-1">
+                                    <label class="block text-gray-300 mb-2 font-medium">مفتاح API الخاص بك</label>
+                                    <div class="flex items-center gap-3">
+                                        <div class="relative flex-1">
+                                            <input type="password" id="apiKeyDisplay" 
+                                                data-key="{% if current_user.api_key %}{{ current_user.api_key }}{% else %}{% endif %}" 
+                                                value="{% if current_user.api_key %}•••••••••••••••••••{% else %}لا يوجد مفتاح API{% endif %}" 
+                                                class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 pr-12 text-white font-mono text-sm" readonly>
+                                            <input type="hidden" id="actualApiKey" value="{% if current_user.api_key %}{{ current_user.api_key }}{% else %}{% endif %}">
+                                            <button type="button" id="toggleApiKey" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition"
+                                                {% if not current_user.api_key %}disabled{% endif %}>
+                                                <i class="fas fa-eye" id="toggleIcon"></i>
+                                            </button>
+                                        </div>
+                                        <button type="button" id="copyApiKey" class="px-4 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition flex items-center gap-2" 
+                                            {% if not current_user.api_key %}disabled{% endif %}>
+                                            <i class="fas fa-copy"></i>
+                                            <span>نسخ</span>
+                                        </button>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        لا تشارك مفتاح API الخاص بك مع أي شخص
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3 mt-4">
+                                <button type="button" id="generateApiKey" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition flex items-center gap-2">
+                                    <i class="fas fa-sync-alt"></i>
+                                    <span>{% if current_user.api_key %}إعادة توليد{% else %}توليد مفتاح جديد{% endif %}</span>
+                                </button>
+                                {% if current_user.api_key %}
+                                <button type="button" id="revokeApiKey" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition flex items-center gap-2">
+                                    <i class="fas fa-times-circle"></i>
+                                    <span>إلغاء المفتاح</span>
+                                </button>
+                                {% endif %}
+                            </div>
+
+                            <div class="mt-6 p-4 bg-blue-900/20 border border-blue-700/30 rounded-lg">
+                                <h4 class="text-sm font-semibold text-blue-400 mb-2 flex items-center">
+                                    <i class="fas fa-lightbulb mr-2"></i>
+                                    كيفية الاستخدام
+                                </h4>
+                                <ul class="text-xs text-gray-400 space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-green-400 mt-0.5 mr-2"></i>
+                                        <span>استخدم هذا المفتاح في طلبات API الخاصة بك عن طريق إضافته في Header: <code class="bg-gray-800 px-2 py-0.5 rounded text-blue-300">X-API-Key: your-key-here</code></span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-green-400 mt-0.5 mr-2"></i>
+                                        <span>يمكنك ربط هذا المفتاح بخدمات مثل VirusTotal, Hybrid Analysis, وغيرها</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check text-green-400 mt-0.5 mr-2"></i>
+                                        <span>إذا تم تسريب المفتاح، قم بإلغائه وتوليد مفتاح جديد فوراً</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم الإشعارات -->
+            <div id="notifications" class="settings-content hidden">
+                <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 card-hover">
+                    <h2 class="text-xl font-semibold text-white mb-6 flex items-center">
+                        <i class="fas fa-bell mr-3 text-yellow-400"></i>
+                        إعدادات الإشعارات
+                    </h2>
+
+                    <form id="notificationsForm" action="{{ url_for('update_settings') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="space-y-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-300 font-medium">الإشعارات البريدية</p>
+                                    <p class="text-sm text-gray-500">استقبل تحديثات على بريدك الإلكتروني</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="emailNotifications" name="email_notifications" class="sr-only peer" {% if user_settings and user_settings.email_notifications %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-300 font-medium">إشعارات الأمان</p>
+                                    <p class="text-sm text-gray-500">تمكين إشعارات تسجيل الدخول والنشاط المشبوه</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="securityNotifications" name="security_notifications" class="sr-only peer" {% if user_settings and user_settings.security_notifications %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-300 font-medium">إشعارات التطبيق</p>
+                                    <p class="text-sm text-gray-500">استقبل إشعارات داخل التطبيق</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="appNotifications" name="app_notifications" class="sr-only peer" {% if user_settings and user_settings.app_notifications %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-300 font-medium">النشرة الإخبارية</p>
+                                    <p class="text-sm text-gray-500">اشترك في النشرة الإخبارية لتلقي التحديثات</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="newsletter" name="newsletter" class="sr-only peer" {% if user_settings and user_settings.newsletter %}checked{% endif %}>
+                                    <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end mt-8">
+                            <button type="submit" class="px-6 py-2 bg-primary hover:bg-blue-600 rounded-lg font-medium transition">حفظ التغييرات</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- قسم التفضيلات -->
+            <div id="preferences" class="settings-content hidden">
+                <!-- Preferences content... -->
+            </div>
+
+            <!-- قسم الخصوصية -->
+            <div id="privacy" class="settings-content hidden">
+                <!-- Privacy content... -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .settings-tab {
+        transition: all 0.2s ease;
+    }
+
+    .settings-tab:hover, .settings-tab.active {
+        background-color: rgba(55, 65, 81, 0.5) !important;
+    }
+
+    .settings-content {
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        z-index: 1000;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+    }
+
+    .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .toast.success {
+        background-color: #10B981;
+    }
+
+    .toast.error {
+        background-color: #EF4444;
+    }
+</style>
+
+<!-- External Settings JS - Fixed Version -->
+<script src="{{ url_for('static', filename='js/settings-fixed.js') }}"></script>
+{% endblock %}

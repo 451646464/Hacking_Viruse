@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+
+{% block title %}Web Security Analysis Report - {{ scan_data.domain }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" id="report-content">
+    <!-- Modern Header -->
+    <div class="relative mb-8">
+        <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-green-500/10 rounded-3xl blur-xl"></div>
+        <div class="relative bg-gray-900/50 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/30 shadow-2xl">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                        <i class="fas fa-globe text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-green-400">Web Security Analysis</h1>
+                        <p class="text-gray-400 mt-2 flex items-center gap-2">
+                            <i class="fas fa-shield-alt text-emerald-400"></i>
+                            <span>Comprehensive Vulnerability Scan</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end gap-2">
+                    <div class="flex items-center gap-2 text-gray-400 text-sm">
+                        <i class="fas fa-calendar text-emerald-400"></i>
+                        <span>{{ scan_data.scan_date }}</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-400 text-sm">
+                        <i class="fas fa-search text-green-400"></i>
+                        <span>Scan Complete</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scan Information Card -->
+    <div class="relative mb-8">
+        <div class="absolute inset-0 bg-gradient-to-r {% if scan_data['stats']['vulnerable'] > 0 %}from-red-500/5 to-orange-500/5{% else %}from-green-500/5 to-emerald-500/5{% endif %} rounded-3xl blur-xl"></div>
+        <div class="relative bg-gray-900/30 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/30 shadow-xl">
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-8">
+                <div class="flex items-start gap-6 flex-1">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br {% if scan_data['stats']['vulnerable'] > 0 %}from-red-500/30 to-orange-600/30{% else %}from-green-500/30 to-emerald-600/30{% endif %} flex items-center justify-center border border-{% if scan_data['stats']['vulnerable'] > 0 %}red{% else %}green{% endif %}-500/30">
+                        <i class="fas fa-globe {% if scan_data['stats']['vulnerable'] > 0 %}text-red-400{% else %}text-green-400{% endif %} text-3xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-2xl font-bold text-white mb-3">
+                            <span class="bg-clip-text text-transparent bg-gradient-to-r {% if scan_data['stats']['vulnerable'] > 0 %}from-red-400 to-orange-300{% else %}from-green-400 to-emerald-300{% endif %}">Domain Information</span>
+                        </h2>
+                        <h3 class="text-xl font-semibold text-white mb-3">{{ scan_data.domain }}</h3>
+                        <div class="flex items-center gap-2 text-gray-300 text-sm">
+                            <i class="fas fa-search-plus text-blue-400"></i>
+                            <span>Scan Type: <strong>{{ scan_data.scan_type }}</strong></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center gap-4">
+                    <div class="px-8 py-4 rounded-2xl text-2xl font-bold backdrop-blur-sm border
+                        {% if scan_data['stats']['vulnerable'] > 0 %} 
+                        bg-red-900/30 text-red-300 border-red-500/30 shadow-lg shadow-red-500/10
+                        {% else %} 
+                        bg-green-900/30 text-green-300 border-green-500/30 shadow-lg shadow-green-500/10
+                        {% endif %}">
+                        {% if scan_data['stats']['vulnerable'] > 0 %}NOT SECURE{% else %}SECURE{% endif %}
+                    </div>
+                    <div class="text-center">
+                        <div class="text-sm text-gray-400 mb-1">Risk Level</div>
+                        <div class="flex gap-1">
+                            {% if scan_data['stats']['vulnerable'] > 0 %}
+                                {% for i in range(5) %}
+                                <div class="w-8 h-2 rounded-full {% if i < 3 %}bg-red-500{% else %}bg-gray-700{% endif %}"></div>
+                                {% endfor %}
+                            {% else %}
+                                {% for i in range(5) %}
+                                <div class="w-8 h-2 rounded-full {% if i < 1 %}bg-green-500{% else %}bg-gray-700{% endif %}"></div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-md p-6 mb-8 card-hover">
+        <h2 class="text-xl font-bold text-white mb-4 pb-2 border-b border-gray-200">Results Summary</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-4 border-t-4 border-blue-500">
+                <div class="flex items-center mb-3">
+                    <i class="fas fa-link text-blue-400 text-xl mr-2"></i>
+                    <h3 class="font-semibold text-white">Analyzed Links</h3>
+                </div>
+                <p class="text-3xl font-bold text-blue-400">{{ scan_data['stats']['total'] }}</p>
+                <div class="mt-3">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-blue-500 h-2.5 rounded-full" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-4 border-t-4 border-red-500">
+                <div class="flex items-center mb-3">
+                    <i class="fas fa-exclamation-triangle text-red-400 text-xl mr-2"></i>
+                    <h3 class="font-semibold text-white">Vulnerable Links</h3>
+                </div>
+                <p class="text-3xl font-bold text-red-400">{{ scan_data['stats']['vulnerable'] }}</p>
+                <div class="mt-3">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-red-500 h-2.5 rounded-full"
+                             style="width: {{ (scan_data['stats']['vulnerable'] / scan_data['stats']['total'] * 100) if scan_data['stats']['total'] > 0 else 0 }}%"></div>
+                    </div>
+                    <p class="text-sm text-gray-300 mt-1">
+                        Vulnerable Links Ratio: {{ '%.2f'|format((scan_data['stats']['vulnerable'] / scan_data['stats']['total'] * 100) if scan_data['stats']['total'] > 0 else 0) }}%
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-4 border-t-4 border-yellow-500">
+                <div class="flex items-center mb-3">
+                    <i class="fas fa-bug text-yellow-400 text-xl mr-2"></i>
+                    <h3 class="font-semibold text-white">Detected Vulnerabilities</h3>
+                </div>
+
+                <p class="text-3xl font-bold text-yellow-400">{{ scan_data.vulnerabilities|length if scan_data.vulnerabilities else 0 }}</p>
+                <div class="mt-3">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-yellow-500 h-2.5 rounded-full"
+                             style="width: {{ (scan_data['stats']['vulnerable'] / scan_data['stats']['total_tests'] * 100) if scan_data['stats']['total_tests'] > 0 else 0 }}%"></div>
+                    </div>
+                    <p class="text-sm text-gray-300 mt-1">
+                        Vulnerability Ratio: {{ '%.2f'|format((scan_data['stats']['vulnerable'] / scan_data['stats']['total_tests'] * 100) if scan_data['stats']['total_tests'] > 0 else 0) }}%
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detected Vulnerabilities -->
+    <div class="bg-white/10 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8 card-hover border border-gray-700">
+        <h2 class="text-xl font-bold text-white mb-4 pb-2 border-b border-gray-600">
+            <i class="fas fa-shield-alt mr-2"></i> Detected Vulnerabilities
+        </h2>
+
+        {% if scan_data.vulnerabilities %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-700">
+                <thead class="bg-gray-900">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Type</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parameter</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Payload</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Severity Level</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Detection Signs</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-gray-800/50 backdrop-blur-sm rounded-2xl divide-y divide-gray-700">
+                    {% for vuln in scan_data.vulnerabilities %}
+                    <tr class="hover:bg-gray-700/50">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-blue-300">{{ vuln.type }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-300">{{ vuln.param }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-300 max-w-xs truncate">{{ vuln.payload }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-bold rounded-full
+                                {% if SEVERITY_LEVELS.get(vuln.type, 'medium') == 'high' %} bg-red-900 text-red-100
+                                {% elif SEVERITY_LEVELS.get(vuln.type, 'medium') == 'medium' %} bg-yellow-900 text-yellow-100
+                                {% else %} bg-green-900 text-green-100 {% endif %}">
+                                {{ SEVERITY_LEVELS.get(vuln.type, 'medium') }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-300">
+                            <ul class="list-disc list-inside">
+                                {% for sign in vuln.detection_signs[:2] %}
+                                <li class="truncate max-w-xs">{{ sign }}</li>
+                                {% endfor %}
+                                {% if vuln.detection_signs|length > 2 %}
+                                <li class="text-gray-500">and {{ vuln.detection_signs|length - 2 }} more signs</li>
+                                {% endif %}
+                            </ul>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <div class="inline-block p-4 bg-green-900/30 rounded-full mb-4">
+                <i class="fas fa-check-circle text-green-400 text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-green-400 mb-2">No security vulnerabilities detected!</h3>
+            <p class="text-gray-300">The website appears to be secure based on the conducted scans.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Scan Details -->
+    <div class="bg-white/10 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8 card-hover border border-gray-700">
+        <h2 class="text-xl font-bold text-white mb-4 pb-2 border-b border-gray-600">
+            <i class="fas fa-chart-bar mr-2"></i> Scan Details
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+                <h3 class="font-semibold text-white mb-3">Scan Statistics</h3>
+                <ul class="space-y-2">
+                    <li class="flex justify-between">
+                        <span class="text-gray-400">Total Tests:</span>
+                        <span class="font-medium text-white">{{ scan_data['stats']['total_tests'] }}</span>
+                    </li>
+                    <li class="flex justify-between">
+                        <span class="text-gray-400">Successful Tests:</span>
+                        <span class="font-medium text-green-400">{{ scan_data['stats']['total_tests'] - scan_data['stats']['vulnerable'] }}</span>
+                    </li>
+                    <li class="flex justify-between">
+                        <span class="text-gray-400">Failed Tests:</span>
+                        <span class="font-medium text-red-400">{{ scan_data['stats']['vulnerable'] }}</span>
+                    </li>
+                    {% if duration %}
+                    <li class="flex justify-between">
+                        <span class="text-gray-400">Duration:</span>
+                        <span class="font-medium text-white">{{ duration }}</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+                <h3 class="font-semibold text-white mb-3">Vulnerability Types</h3>
+                {% if scan_data.vulnerabilities %}
+                <div class="space-y-3">
+                    {% set vuln_types = {} %}
+                    {% for vuln in scan_data.vulnerabilities %}
+                        {% set type = vuln.type %}
+                        {% if vuln_types[type] %}
+                            {% set _ = vuln_types.update({type: vuln_types[type] + 1}) %}
+                        {% else %}
+                            {% set _ = vuln_types.update({type: 1}) %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for type, count in vuln_types.items() %}
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-gray-300">{{ type }}</span>
+                            <span class="text-gray-400">{{ count }}</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-red-500 h-2 rounded-full"
+                                 style="width: {{ (count / scan_data.vulnerabilities|length * 100) }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-lock text-green-400 text-3xl mb-2"></i>
+                    <p class="text-gray-400">No vulnerability types recorded</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Recommendations -->
+    <div class="bg-white/10 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8 card-hover border border-gray-700">
+        <h2 class="text-xl font-bold text-white mb-4 pb-2 border-b border-gray-600">
+            <i class="fas fa-lightbulb mr-2"></i> Security Recommendations
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gray-900/50 rounded-lg p-4 border border-blue-500">
+                <h3 class="font-semibold text-blue-400 mb-3">
+                    <i class="fas fa-shield-alt mr-2"></i> Preventive Measures
+                </h3>
+                <ul class="list-disc list-inside pl-2 space-y-2">
+                    <li class="text-gray-300">Keep software and systems updated</li>
+                    <li class="text-gray-300">Use firewalls and WAF applications</li>
+                    <li class="text-gray-300">Implement strong password policies</li>
+                    <li class="text-gray-300">Enable two-factor authentication</li>
+                    <li class="text-gray-300">Conduct regular security audits</li>
+                </ul>
+            </div>
+
+            <div class="bg-gray-900/50 rounded-lg p-4 border border-red-500">
+                <h3 class="font-semibold text-red-400 mb-3">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Remediation Measures
+                </h3>
+                <ul class="list-disc list-inside pl-2 space-y-2">
+                    <li class="text-gray-300">Fix discovered vulnerabilities immediately</li>
+                    <li class="text-gray-300">Review user permissions and privileges</li>
+                    <li class="text-gray-300">Check logs for any potential breaches</li>
+                    <li class="text-gray-300">Encrypt sensitive data</li>
+                    <li class="text-gray-300">Create regular backups</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Actions -->
+    <div class="relative mb-8">
+        <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-green-500/5 rounded-3xl blur-xl"></div>
+        <div class="relative bg-gray-900/30 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/30 shadow-xl">
+            <h2 class="text-2xl font-bold text-white mb-8 text-center flex items-center justify-center gap-3">
+                <i class="fas fa-tasks text-emerald-400"></i>
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-green-300">Report Actions</span>
+            </h2>
+
+            <div class="flex flex-wrap gap-4 justify-center">
+                <a href="{{ url_for('web_analysis') }}"
+                   class="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-800 transition-all transform hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-redo"></i> New Scan
+                </a>
+
+                <a href="{{ url_for('dashboard') }}"
+                   class="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-800 transition-all transform hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+
+                <button onclick="window.print()"
+                        class="px-8 py-4 bg-gradient-to-r from-green-600 to-teal-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-teal-700 transition-all transform hover:-translate-y-1 hover:shadow-lg hover:shadow-green-500/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-print"></i> Print
+                </button>
+
+                <button id="share-report-btn"
+                        class="px-8 py-4 bg-gradient-to-r from-cyan-600 to-blue-700 text-white font-semibold rounded-xl hover:from-cyan-700 hover:to-blue-800 transition-all transform hover:-translate-y-1 hover:shadow-lg hover:shadow-cyan-500/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-share-alt"></i> Share
+                </button>
+
+                <button onclick="confirmDelete('web', {{ analysis_id }})"
+                        class="px-8 py-4 bg-gradient-to-r from-red-600 to-red-800 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-900 transition-all transform hover:-translate-y-1 hover:shadow-lg hover:shadow-red-500/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-trash-alt"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    function confirmDelete(reportType, reportId) {
+        if (confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+            deleteReport(reportType, reportId);
+        }
+    }
+
+function deleteReport(reportType, reportId) {
+    let endpoint = '';
+    switch(reportType) {
+        case 'sample':
+            endpoint = `/delete_sample_report/${reportId}`;
+            break;
+        case 'web':
+            endpoint = `/delete_web_report/${reportId}`;
+            break;
+        case 'url':
+            endpoint = `/delete_url_report/${reportId}`;
+            break;
+        case 'code':
+            endpoint = `/delete_code_report/${reportId}`;
+            break;
+        case 'pdf':
+            endpoint = `/delete_pdf_report/${reportId}`;
+            break;
+        default:
+            alert('Unknown report type');
+            return;
+    }
+
+    fetch(endpoint, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Report deleted successfully');
+            window.location.href = "/dashboard";
+        } else {
+            alert('Failed to delete report: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while trying to delete the report');
+    });
+}
+</script>
+<script>
+    // Open sharing form
+    document.getElementById('share-report-btn').addEventListener('click', function() {
+        const expiryDays = 7;
+        const scanId = {{ scan_data.id }};
+
+        fetch(`/share_web_scan/${scanId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `expiry_days=${expiryDays}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Create hidden text element to copy link
+                const tempInput = document.createElement('input');
+                tempInput.value = data.share_url;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+
+                alert('Share link copied: ' + data.share_url);
+            } else {
+                alert('Error generating link: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error generating link');
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار التبويبات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .settings-content {
+            display: none;
+        }
+        .settings-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-8">
+    <h1 class="text-2xl mb-4">اختبار التبويبات</h1>
+    
+    <!-- التبويبات -->
+    <div class="flex gap-2 mb-6">
+        <button class="settings-tab active px-4 py-2 bg-blue-600 rounded" data-target="profile">الملف الشخصي</button>
+        <button class="settings-tab px-4 py-2 bg-gray-700 rounded" data-target="security">الأمان</button>
+        <button class="settings-tab px-4 py-2 bg-gray-700 rounded" data-target="preferences">التفضيلات</button>
+    </div>
+    
+    <!-- المحتوى -->
+    <div id="profile" class="settings-content active">
+        <div class="bg-gray-800 p-6 rounded">
+            <h2>الملف الشخصي</h2>
+            <p>هذا قسم الملف الشخصي</p>
+        </div>
+    </div>
+    
+    <div id="security" class="settings-content">
+        <div class="bg-gray-800 p-6 rounded">
+            <h2>الأمان</h2>
+            <p>هذا قسم الأمان</p>
+        </div>
+    </div>
+    
+    <div id="preferences" class="settings-content">
+        <div class="bg-gray-800 p-6 rounded">
+            <h2>التفضيلات</h2>
+            <p>هذا قسم التفضيلات</p>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.settings-tab');
+            const contents = document.querySelectorAll('.settings-content');
+            
+            console.log('Tabs found:', tabs.length);
+            console.log('Contents found:', contents.length);
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    console.log('Clicked tab:', targetId);
+                    
+                    // Remove active from all tabs
+                    tabs.forEach(t => {
+                        t.classList.remove('active', 'bg-blue-600');
+                        t.classList.add('bg-gray-700');
+                    });
+                    
+                    // Add active to clicked tab
+                    this.classList.add('active', 'bg-blue-600');
+                    this.classList.remove('bg-gray-700');
+                    
+                    // Hide all contents
+                    contents.forEach(c => {
+                        c.classList.remove('active');
+                    });
+                    
+                    // Show target content
+                    document.getElementById(targetId).classList.add('active');
+                    
+                    console.log('Tab activated successfully');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

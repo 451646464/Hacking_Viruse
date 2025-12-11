@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block title %}الإشعارات - CyberHomesh{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- عنوان الصفحة -->
+    <div class="bg-gradient-to-r from-blue-900/80 to-indigo-900/80 backdrop-blur-lg rounded-2xl p-6 mb-8 shadow-lg border border-blue-700/30">
+        <div class="flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-white mb-2 flex items-center">
+                <i class="fas fa-bell mr-4 text-yellow-400"></i>
+                الإشعارات
+            </h1>
+            <div class="space-x-2">
+                <button id="markAllRead" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-all duration-200 text-white flex items-center">
+                    <i class="fas fa-check-double mr-2"></i>
+                    تحديد الكل كمقروء
+                </button>
+            </div>
+        </div>
+        <p class="text-blue-200">تتبع الإشعارات والتنبيهات المهمة</p>
+    </div>
+
+    <!-- قسم الإشعارات -->
+    <div class="bg-gray-800/70 backdrop-blur-lg rounded-xl p-6 shadow-lg border border-gray-700/50">
+        <!-- أنواع الإشعارات -->
+        <div class="flex flex-wrap mb-6 border-b border-gray-700 pb-4">
+            <button class="notification-filter active px-4 py-2 mr-2 mb-2 rounded-lg transition-all duration-200 hover:bg-blue-600/20" data-filter="all">
+                الكل <span class="total-count notification-count bg-blue-600 text-white rounded-full px-2 py-0.5 ml-2 text-xs">0</span>
+            </button>
+            <button class="notification-filter px-4 py-2 mr-2 mb-2 rounded-lg transition-all duration-200 hover:bg-blue-600/20" data-filter="unread">
+                غير المقروءة <span class="unread-count notification-count bg-red-600 text-white rounded-full px-2 py-0.5 ml-2 text-xs">0</span>
+            </button>
+            <button class="notification-filter px-4 py-2 mr-2 mb-2 rounded-lg transition-all duration-200 hover:bg-blue-600/20" data-filter="general">
+                عامة <span class="general-count notification-count bg-gray-600 text-white rounded-full px-2 py-0.5 ml-2 text-xs">0</span>
+            </button>
+            <button class="notification-filter px-4 py-2 mr-2 mb-2 rounded-lg transition-all duration-200 hover:bg-blue-600/20" data-filter="security">
+                الأمان <span class="security-count notification-count bg-green-600 text-white rounded-full px-2 py-0.5 ml-2 text-xs">0</span>
+            </button>
+            <button class="notification-filter px-4 py-2 mr-2 mb-2 rounded-lg transition-all duration-200 hover:bg-blue-600/20" data-filter="admin">
+                إدارية <span class="admin-count notification-count bg-purple-600 text-white rounded-full px-2 py-0.5 ml-2 text-xs">0</span>
+            </button>
+        </div>
+
+        <!-- قائمة الإشعارات -->
+        <div id="notifications-list" class="space-y-4">
+            <!-- هنا سيتم إدراج الإشعارات ديناميكياً -->
+            {% if notifications %}
+                {% for notification in notifications %}
+                    {% include 'partials/notification_item.html' %}
+                {% endfor %}
+            {% else %}
+                <div class="empty-notifications text-center py-12">
+                    <div class="text-8xl text-gray-600 mb-4">
+                        <i class="fas fa-bell-slash"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-400 mb-2">لا توجد إشعارات</h3>
+                    <p class="text-gray-500">ستظهر هنا الإشعارات والتنبيهات عندما تصل</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- التحميل -->
+        <div id="loading-notifications" class="hidden text-center py-8">
+            <div class="inline-block animate-spin text-3xl text-blue-500 mb-3">
+                <i class="fas fa-circle-notch"></i>
+            </div>
+            <p class="text-gray-400">جاري تحميل الإشعارات...</p>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript للتعامل مع الإشعارات -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // المتغيرات
+    const notificationsContainer = document.getElementById('notifications-list');
+    const markAllReadBtn = document.getElementById('markAllRead');
+    const filterButtons = document.querySelectorAll('.notification-filter');
+    const loadingIndicator = document.getElementById('loading-notifications');
+    
+    let currentFilter = 'all';
+    let notificationsData = [];
+    
+    // تحديث أعداد الإشعارات
+    function updateNotificationCounts() {
+        const allCount = notificationsData.length;
+        const unreadCount = notificationsData.filter(n => !n.is_read).length;
+        const generalCount = notificationsData.filter(n => n.type === 'general').length;
+        const securityCount = notificationsData.filter(n => n.type === 'security').length;
+        const adminCount = notificationsData.filter(n => n.type === 'admin').length;
+        
+        document.querySelector('.total-count').textContent = allCount;
+        document.querySelector('.unread-count').textContent = unreadCount;
+        document.querySelector('.general-count').textContent = generalCount;
+        document.querySelector('.security-count').textContent = securityCount;
+        document.querySelector('.admin-count').textContent = adminCount;
+    }
+    
+    // تحميل الإشعارات
+    function loadNotifications(filter = 'all') {
+        showLoading(true);
+        
+        const isUnreadFilter = filter === 'unread';
+        const url = `/api/notifications${isUnreadFilter ? '?unread=true' : ''}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    notificationsData = data.notifications;
+                    updateNotificationCounts();
+                    renderNotifications();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('حدث خطأ أثناء تحميل الإشعارات');
+            })
+            .finally(() => {
+                showLoading(false);
+            });
+    }
+    
+    // عرض الإشعارات حسب الفلتر الحالي
+    function renderNotifications() {
+        const filteredNotifications = filterNotifications(notificationsData, currentFilter);
+        
+        if (filteredNotifications.length === 0) {
+            notificationsContainer.innerHTML = `
+                <div class="empty-notifications text-center py-12">
+                    <div class="text-8xl text-gray-600 mb-4">
+                        <i class="fas fa-bell-slash"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-400 mb-2">لا توجد إشعارات</h3>
+                    <p class="text-gray-500">ستظهر هنا الإشعارات والتنبيهات عندما تصل</p>
+                </div>
+            `;
+            return;
+        }
+        
+        notificationsContainer.innerHTML = '';
+        
+        filteredNotifications.forEach(notification => {
+            const notificationElement = createNotificationElement(notification);
+            notificationsContainer.appendChild(notificationElement);
+        });
+        
+        // إضافة أحداث للأزرار
+        document.querySelectorAll('.mark-read-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = this.closest('.notification-item').dataset.id;
+                markNotificationAsRead(id);
+            });
+        });
+        
+        document.querySelectorAll('.delete-notification-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = this.closest('.notification-item').dataset.id;
+                deleteNotification(id);
+            });
+        });
+    }
+    
+    // تصفية الإشعارات حسب النوع
+    function filterNotifications(notifications, filter) {
+        if (filter === 'all') return notifications;
+        if (filter === 'unread') return notifications.filter(n => !n.is_read);
+        return notifications.filter(n => n.type === filter);
+    }
+    
+    // إنشاء عنصر HTML للإشعار
+    function createNotificationElement(notification) {
+        const div = document.createElement('div');
+        div.className = `notification-item relative flex p-4 rounded-lg border ${notification.is_read ? 'bg-gray-800/40 border-gray-700/40' : 'bg-gray-800/70 border-blue-800/40'} hover:border-blue-600/30 transition-all duration-200`;
+        div.dataset.id = notification.id;
+        div.dataset.type = notification.type;
+        div.dataset.read = notification.is_read;
+        
+        // تحديد لون الأيقونة حسب النوع
+        let iconClass = 'text-blue-400';
+        if (notification.type === 'security') iconClass = 'text-green-400';
+        if (notification.type === 'admin') iconClass = 'text-purple-400';
+        if (notification.type === 'system') iconClass = 'text-yellow-400';
+        if (notification.type === 'warning') iconClass = 'text-orange-400';
+        
+        // إضافة نقطة زرقاء للإشعارات الجديدة
+        const unreadIndicator = !notification.is_read ? `
+            <span class="absolute top-4 left-4 w-3 h-3 bg-blue-500 rounded-full"></span>
+        ` : '';
+        
+        div.innerHTML = `
+            ${unreadIndicator}
+            <div class="text-3xl mr-4 ${iconClass}">
+                <i class="fas fa-${notification.icon || 'bell'}"></i>
+            </div>
+            <div class="flex-1">
+                <div class="flex justify-between items-start mb-1">
+                    <h4 class="text-lg font-semibold ${!notification.is_read ? 'text-white' : 'text-gray-300'}">${notification.title}</h4>
+                    <div class="text-xs text-gray-500">${formatDate(notification.created_at)}</div>
+                </div>
+                <p class="text-gray-400 mb-3">${notification.message}</p>
+                <div class="flex justify-between items-center">
+                    <div class="flex space-x-2 text-sm">
+                        <span class="px-2 py-1 rounded bg-gray-700 text-gray-300">
+                            ${getNotificationTypeLabel(notification.type)}
+                        </span>
+                    </div>
+                    <div class="space-x-2">
+                        ${!notification.is_read ? `
+                            <button class="mark-read-btn text-blue-400 hover:text-blue-300 transition-colors">
+                                <i class="fas fa-check"></i> تحديد كمقروء
+                            </button>
+                        ` : ''}
+                        <button class="delete-notification-btn text-red-400 hover:text-red-300 transition-colors">
+                            <i class="fas fa-trash-alt"></i> حذف
+                        </button>
+                    </div>
+                </div>
+                ${notification.link ? `
+                    <div class="mt-3">
+                        <a href="${notification.link}" class="text-blue-400 hover:text-blue-300 flex items-center">
+                            <i class="fas fa-external-link-alt mr-2"></i> عرض التفاصيل
+                        </a>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        
+        return div;
+    }
+    
+    // وظائف مساعدة
+    function getNotificationTypeLabel(type) {
+        const labels = {
+            'general': 'عام',
+            'security': 'أمان',
+            'system': 'نظام',
+            'admin': 'إداري',
+            'warning': 'تحذير',
+            'info': 'معلومات'
+        };
+        return labels[type] || 'عام';
+    }
+    
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleString('ar-SA');
+    }
+    
+    // وظائف التعامل مع الإشعارات
+    function markNotificationAsRead(id) {
+        fetch(`/api/notifications/${id}/read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // تحديث حالة الإشعار في المصفوفة
+                const notification = notificationsData.find(n => n.id == id);
+                if (notification) {
+                    notification.is_read = true;
+                    renderNotifications();
+                    updateNotificationCounts();
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    
+    function deleteNotification(id) {
+        if (!confirm('هل أنت متأكد من حذف هذا الإشعار؟')) return;
+        
+        fetch(`/api/notifications/${id}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // إزالة الإشعار من المصفوفة
+                notificationsData = notificationsData.filter(n => n.id != id);
+                renderNotifications();
+                updateNotificationCounts();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    
+    // تحديد الكل كمقروء
+    if (markAllReadBtn) {
+        markAllReadBtn.addEventListener('click', function() {
+            fetch('/api/notifications/read/all', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // تحديث جميع الإشعارات كمقروءة
+                    notificationsData.forEach(n => n.is_read = true);
+                    renderNotifications();
+                    updateNotificationCounts();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    }
+    
+    // التصفية حسب النوع
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.dataset.filter;
+            currentFilter = filter;
+            
+            // تحديث حالة الأزرار
+            filterButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-600/20'));
+            this.classList.add('active', 'bg-blue-600/20');
+            
+            renderNotifications();
+        });
+    });
+    
+    // وظائف مساعدة للواجهة
+    function showLoading(show) {
+        if (show) {
+            loadingIndicator.classList.remove('hidden');
+            notificationsContainer.classList.add('hidden');
+        } else {
+            loadingIndicator.classList.add('hidden');
+            notificationsContainer.classList.remove('hidden');
+        }
+    }
+    
+    function showError(message) {
+        notificationsContainer.innerHTML = `
+            <div class="text-center py-8">
+                <div class="text-6xl text-red-500 mb-4">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-300 mb-2">حدث خطأ</h3>
+                <p class="text-gray-400">${message}</p>
+            </div>
+        `;
+    }
+    
+    // تحميل الإشعارات عند تحميل الصفحة
+    loadNotifications();
+});
+</script>
+{% endblock %}
