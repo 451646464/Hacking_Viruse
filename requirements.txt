@@ -112,7 +112,7 @@ reportlab==4.4.2
 requests==2.32.4
 requests-oauthlib==2.0.0
 rich==14.1.0
-scikit-learn==1.7.1
+scikit-learn==1.6.1
 scipy==1.16.0
 seaborn==0.13.2
 selenium==4.34.2
@@ -132,7 +132,6 @@ svglib==1.5.1
 tabulate==0.9.0
 tensorboard==2.20.0
 tensorboard-data-server==0.7.2
-tensorflow==2.20.0
 termcolor==3.1.0
 threadpoolctl==3.6.0
 tinycss2==1.4.0
@@ -167,4 +166,6 @@ yara==1.7.7
 yara-python==4.5.2
 zopfli==0.2.3.post1
 gunicorn==23.0.0
+PyPDF2==3.0.1
+
 
