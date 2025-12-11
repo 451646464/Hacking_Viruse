@@ -1728,7 +1728,6 @@ def index():
         )
         mitre_techniques = mitre_attck_mapping(
             strings +
-            [match['rule'] for match in yara_matches] +
             persistence_indicators
         )
 
@@ -1766,7 +1765,7 @@ def index():
                 entropy=entropy,
                 packed=packed,
                 network_indicators=json.dumps(network_indicators),
-                yara_matches=json.dumps([match['rule'] for match in yara_matches]),
+                yara_matches=json.dumps([]),
                 libraries=json.dumps(libraries),
                 powershell_commands=json.dumps(powershell_commands),
                 persistence_indicators=json.dumps(persistence_indicators),
@@ -3074,6 +3073,7 @@ def fix_stored_data(data):
 
 
 if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
     # استيراد وتسجيل مسارات تحليل الصور
     try:
         from image_analysis_routes import register_image_routes
@@ -3086,4 +3086,4 @@ if __name__ == '__main__':
     app.run(
         debug=app.config['DEBUG'],
         host=app.config['HOST'],
-        port=app.config['PORT'])
+        port=port)

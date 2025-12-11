@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 
 
-try:
-    import yara
-except ImportError:
-    yara = None
+#try:
+ #   import yara
+#except ImportError:
+ #   yara = None
 
 def allowed_file_exe(filename):
     # استخدام القيمة الافتراضية إذا لم يكن الإعداد متاحًا
@@ -380,42 +380,11 @@ def analyze_network_indicators(strings):
 
 
 
-
+# استبدال كامل الدالة:
 def apply_yara_rules(file_path):
-    matches = []
-    try:
-        # نحصل على مسار المجلد الذي يحتوي هذا السكربت
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        rules_dir = os.path.join(base_dir, 'yara-rules')  # مجلد القواعد داخل مجلد السكربت نفسه
-
-        # نتحقق من وجود المجلد بشكل صحيح
-        if not os.path.exists(rules_dir):
-            logger.warning(f"مجلد القواعد غير موجود: {rules_dir}. سيتم إنشاؤه.")
-            os.makedirs(rules_dir)
-            return matches  # لا توجد قواعد للفحص
-
-        # نقرأ ملفات القواعد فقط من المجلد الصحيح
-        yara_files = [f for f in os.listdir(rules_dir) if f.endswith(('.yar', '.yara'))]
-        if not yara_files:
-            logger.warning(f"لا توجد ملفات قواعد في {rules_dir}")
-            return matches
-
-        # نُركب قواعد yara من كل ملف ونطبقها على الملف المُدخل
-        for yara_file in yara_files:
-            try:
-                rules = yara.compile(os.path.join(rules_dir, yara_file))
-                for match in rules.match(file_path):
-                    matches.append({
-                        'rule': match.rule,
-                        'tags': ', '.join(match.tags),
-                        'description': match.meta.get('description', '') if hasattr(match, 'meta') else ''
-                    })
-            except Exception as e:
-                logger.error(f"خطأ في قاعدة YARA {yara_file}: {str(e)}")
-    except Exception as e:
-        logger.error(f"خطأ أثناء فحص YARA: {str(e)}")
-    return matches
-
+    """دالة YARA معطلة حالياً"""
+    logger.info("YARA معطل حالياً")
+    return []
 
 def extract_libraries(file_path):
 
