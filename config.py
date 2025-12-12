@@ -41,7 +41,7 @@ class Config:
     # إعدادات الخادم
     DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
     HOST = os.getenv('HOST', '0.0.0.0')
-    PORT = int(os.getenv('PORT', 5000))
+    PORT = int(os.getenv('PORT', 10000))
 
     # إعدادات التقارير والنموذج
     REPORTS_FOLDER = os.getenv('REPORTS_FOLDER', os.path.join(os.getcwd(), 'reports'))

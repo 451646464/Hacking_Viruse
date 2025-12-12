@@ -132,6 +132,8 @@ svglib==1.5.1
 tabulate==0.9.0
 tensorboard==2.20.0
 tensorboard-data-server==0.7.2
+tensorflow==2.20.0
+PyPDF2==3.0.1
 termcolor==3.1.0
 threadpoolctl==3.6.0
 tinycss2==1.4.0
@@ -166,6 +168,4 @@ yara==1.7.7
 yara-python==4.5.2
 zopfli==0.2.3.post1
 gunicorn==23.0.0
-PyPDF2==3.0.1
-
 
